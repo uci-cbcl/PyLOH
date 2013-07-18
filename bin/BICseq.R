@@ -9,3 +9,8 @@ seg.summary <- BICseq:::getSummary(segs, correction=TRUE)
 write.table(seg.summary, file = './intervals.BICseq', quote = FALSE, sep = '\t', row.names = FALSE, col.names = TRUE)
 
 
+
+
+
+
+
