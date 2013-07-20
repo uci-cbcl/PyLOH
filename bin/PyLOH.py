@@ -118,7 +118,7 @@ def main():
     
     counts = []
     I = []
-    interval_list = []
+    segment_list = []
     
     for chrom in CHROM_LIST:
         if chrom not in chrom_set:
@@ -136,7 +136,7 @@ def main():
         if LOH_flag == True:
             counts.append(counts_j)
             I.append(counts_j.shape[0])
-            interval_list.append(chrom)
+            segment_list.append(chrom)
             print '%s\t%s\t%s' % (chrom, LOH_frec, counts_j.shape[0]) 
 
 ################################################################################
