@@ -4,11 +4,62 @@ Created on 2013-07-20
 @author: Yi Li
 '''
 import numpy as np
+import pysam
 from collections import Counter
 
 from pyloh import constants
+from pyloh.preprocessing.io.utils import *
 
 ascii_offset = 33
+
+#JointSNVMix
+def preprocess(args):        
+    normal_bam = pysam.Samfile(args.normal_bam_file_name, 'rb')
+    tumor_bam = pysam.Samfile(args.tumor_bam_file_name, 'rb')
+    
+    ref_genome_fasta = pysam.Fastafile(args.reference_genome_file_name)
+    
+    segments = Segments()
+    
+    if args.segments_bed_file_name == None:
+        segments.segmentation_by_chrom(normal_bam, tumor_bam)
+    else:
+        segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed_file_name)
+               
+    converter = BamToDataConverter(
+                                   normal_bam,
+                                   tumor_bam,
+                                   ref_genome_fasta,
+                                   args.data_file_basename,
+                                   segments,
+                                   min_depth=args.min_depth,
+                                   min_bqual=args.min_base_qual,
+                                   min_mqual=args.min_base_qual,
+                                   )
+    
+    converter.convert()
+
+#JointSNVMix
+class BamToDataConverter:
+    def __init__(self, normal_bam, tumor_bam, ref_genome_fasta, data_file_basename,
+                 segments, min_depth=20, min_bqual=10, min_mqual=10):
+        self.normal_bam = normal_bam
+        self.tumor_bam = tumor_bam
+        self.ref_genome_fasta = ref_genome_fasta
+        self.data_file_basename = data_file_basename
+        
+        self.segments = segments
+        self.min_depth = min_depth
+        self.min_bqual = min_bqual
+        self.min_mqual = min_mqual
+        
+        self.buffer = 100000
+        
+    def convert(self):        
+        
+        
+        
+        
 
 class Data:
     def __init__(self, segments=None, paired_counts=None):
@@ -303,30 +354,30 @@ class PairedPileupIterator:
             else:
                 raise Exception("Error in joint pileup iterator.")
 
-#=======================================================================================================================
-# Functions
-#=======================================================================================================================
-
-def BEDParser(bed_file_name):
-    inbed = open(bed_file_name)
-    
-    chroms = []
-    starts = []
-    ends = []
-    
-    for line in inbed:
-        if line[0:3] != 'chr':
-            continue
-        
-        chrom, start, end = line.split('\t')[0:3]
-        
-        chroms.append(chrom)
-        starts.append(int(start))
-        ends.append(int(end))
-            
-    inbed.close()
-    
-    return (chroms, starts, ends)
+##=======================================================================================================================
+## Functions
+##=======================================================================================================================
+#
+#def BEDParser(bed_file_name):
+#    inbed = open(bed_file_name)
+#    
+#    chroms = []
+#    starts = []
+#    ends = []
+#    
+#    for line in inbed:
+#        if line[0:3] != 'chr':
+#            continue
+#        
+#        chrom, start, end = line.split('\t')[0:3]
+#        
+#        chroms.append(chrom)
+#        starts.append(int(start))
+#        ends.append(int(end))
+#            
+#    inbed.close()
+#    
+#    return (chroms, starts, ends)
     
     
     
