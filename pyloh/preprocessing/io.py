@@ -10,6 +10,62 @@ from pyloh import constants
 
 ascii_offset = 33
 
+class Data:
+    def __init__(self, segments=None, paired_counts=None):
+        self.segments = Segments()
+        self.paired_counts = []
+        self.seg_num = 0
+        
+        if segments != None and paired_counts != None:
+            self.segments = segments
+            self.paired_counts = paired_counts
+            self.seg_num = segments.num
+
+    def read_data(self, filename_base):
+        inseg_file_name = filename_base + '.segments'
+        incounts_file_name = filename_base + '.counts'
+            
+        self.segments.read_segfile(inseg_file_name)
+        self.seg_num = self.segments.num
+        self._read_counts(incounts_file_name)
+        
+    def _read_counts(self, incounts_file_name):
+        infile = open(incounts_file_name)
+        
+        for j in range(0, self.seg_num):
+            self.paired_counts.append([])
+            
+        for line in infile:
+            if line[0] == '#':
+                continue
+            
+            idx, a_N, b_N, a_T, b_T = map(int, line.strip('\n').split('\t'))
+            
+            self.paired_counts[idx].append([a_N, b_N, a_T, b_T])
+            
+        for j in range(0, self.seg_num):
+            self.paired_counts[j] = np.array(self.paired_counts[j])
+        
+        infile.close()
+
+    def write_data(self, filename_base):
+        outseg_file_name = filename_base + '.segments'
+        outcounts_file_name = filename_base + '.counts'
+        
+        self.segments.write_segfile(outseg_file_name)
+        self._write_counts(outcounts_file_name)
+        
+    def _write_counts(self, outcounts_file_name):
+        outfile = open(outcounts_file_name, 'w')
+        
+        outfile.write('\t'.join(['#seg_idx', 'normal_A', 'normal_B', 'tumor_A', 'tumor_B']) + '\n')
+        
+        for j in range(0, self.seg_num):
+            for i in range(0, self.paired_counts[j].shape[0]):
+                outfile.write(str(j) + '\t' + '\t'.join(map(str, self.paired_counts[j][i])) + '\n')
+        
+        outfile.close()
+
 class Segments:
     def __init__(self):
         self.num = 0
@@ -17,8 +73,10 @@ class Segments:
         self.chroms = []
         self.starts = []
         self.ends = []
+        self.normal_reads_num = []
+        self.tumor_reads_num = []
         
-    def segmentation_by_chrom(self):
+    def segmentation_by_chrom(self, normal_bam, tumor_bam):
         chrom_list = constants.CHROM_LIST
         chrom_lens = constants.CHROM_LENS
         chrom_start = constants.CHROM_START
@@ -26,15 +84,19 @@ class Segments:
         
         for i in range(0, chrom_num):
             seg_name = self._get_segment_name(chrom_list[i], chrom_start, chrom_lens[i])
+            normal_reads_num = normal_bam.count(chrom_list[i], chrom_start, chrom_lens[i])
+            tumor_reads_num = tumor_bam.count(chrom_list[i], chrom_start, chrom_lens[i])
             
             self.names.append(seg_name)
             self.chroms.append(chrom_list[i])
             self.starts.append(chrom_start)
             self.ends.append(chrom_lens[i])
+            self.normal_reads_num.append(normal_reads_num)
+            self.tumor_reads_num.append(tumor_reads_num)
         
         self.num = chrom_num
         
-    def segmentation_by_bed(self, bed_file_name):
+    def segmentation_by_bed(self, normal_bam, tumor_bam, bed_file_name):
         chrom_list = constants.CHROM_LIST
         chrom_lens = constants.CHROM_LENS
         chrom_start = constants.CHROM_START
@@ -52,15 +114,53 @@ class Segments:
             if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[i]:
                 print 'Out of range chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
                 continue
+
+            normal_reads_num = normal_bam.count(bed_chroms[i], bed_starts[i], bed_ends[i])
+            tumor_reads_num = tumor_bam.count(bed_chroms[i], bed_starts[i], bed_ends[i])
             
             self.names.append(seg_name)
             self.chroms.append(bed_chroms[i])
             self.starts.append(bed_starts[i])
             self.ends.append(bed_ends[i])
+            self.normal_reads_num.append(normal_reads_num)
+            self.tumor_reads_num.append(tumor_reads_num)
             self.num = self.num + 1
     
+    def read_segfile(self, inseg_file_name):
+        infile = open(inseg_file_name)
+        
+        for line in infile:
+            if line[0] == '#':
+                continue
+            
+            fields = line.strip('\n').split('\t')
+            seg_name, chrom = fields[0:2]
+            start, end, normal_reads_num, tumor_reads_num = map(int, fields[2:6])
+            
+            self.names.append(seg_name)
+            self.chroms.append(chrom)
+            self.starts.append(start)
+            self.ends.append(end)
+            self.normal_reads_num.append(normal_reads_num)
+            self.tumor_reads_num.append(tumor_reads_num)
+            
+            self.num = self.num + 1
+        
+        infile.close()
+        
+    def write_segfile(self, outseg_file_name):
+        outfile = open(outseg_file_name, 'w')
+        
+        outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num', 'tumor_reads_num']) + '\n')
+        
+        for j in range(0, self.num):
+            outfile.write('\t'.join(map(str, self[j])) + '\n')
+        
+        outfile.close()
+    
     def __getitem__(self, i):
-        return (self.names[i], self.chroms[i], self.starts[i], self.ends[i])
+        "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num"
+        return (self.names[i], self.chroms[i], self.starts[i], self.ends[i], self.normal_reads_num[i], self.tumor_reads_num[i])
         
     def _get_segment_name(self, chrom, start, end):
         return '_'.join([chrom, 'start', str(start), 'end', str(end)])
