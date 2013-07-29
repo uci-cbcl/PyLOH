@@ -36,8 +36,8 @@ def normal_heterozygous_filter(counts):
     idx_keep = []
     
     for i in xrange(0, I):
-        a_N = counts[i, 0]
-        b_N = counts[i, 1]
+        a_N = counts[i, 0]*1.0
+        b_N = counts[i, 1]*1.0
         d_N = a_N + b_N
         BAF_N = b_N/d_N
         
