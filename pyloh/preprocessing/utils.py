@@ -55,6 +55,12 @@ def tumor_LOH_test(counts):
     
     I = counts.shape[0]
     
+    if I < constants.SITES_NUM_MIN:
+        LOH_frec = 0.0
+        LOH_flag = 'NONE'
+        
+        return (LOH_frec, LOH_flag)
+    
     LOH_num = 0.0
     
     for i in xrange(0, I):
@@ -69,8 +75,8 @@ def tumor_LOH_test(counts):
     LOH_frec = LOH_num/I
     
     if LOH_frec < LOH_FREC_THRED:
-        LOH_flag = False
+        LOH_flag = 'FALSE'
     else:
-        LOH_flag = True
+        LOH_flag = 'TRUE'
         
     return (LOH_frec, LOH_flag)
