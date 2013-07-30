@@ -3,9 +3,10 @@ Created on 2013-07-20
 
 @author: Yi Li
 '''
+from collections import Counter
+
 import numpy as np
 import pysam
-from collections import Counter
 
 from pyloh import constants
 from pyloh.preprocessing.utils import *
