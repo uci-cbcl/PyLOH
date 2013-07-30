@@ -97,14 +97,16 @@ class BamToDataConverter:
             
             buffer_counts = np.array(buffer_counts)
             buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
-            paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+            if buffer_counts_filtered.shape(0) != 0:
+                paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
             
             buffer_counts = []
             i = 0
         
         buffer_counts = np.array(buffer_counts)
         buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
-        paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+        if buffer_counts_filtered.shape(0) != 0:
+            paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
         
         return paired_counts_j
 
@@ -249,9 +251,9 @@ class Segments:
             
             fields = line.strip('\n').split('\t')
             seg_name, chrom = fields[0:2]
-            start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_flag = map(int, fields[2:6])
+            start, end, normal_reads_num, tumor_reads_num = map(int, fields[2:6])
             LOH_frec = float(fields[6])
-            LOH_flag = bool(fields[7])
+            #LOH_flag = bool(fields[7])
             
             self.names.append(seg_name)
             self.chroms.append(chrom)
@@ -278,8 +280,8 @@ class Segments:
         outfile.close()
     
     def __init_LOH_status(self):
-        self.LOH_frec = [None for j in range(0, self.num)]
-        self.LOH_flag = [None for j in range(0, self.num)]
+        self.LOH_frec = ['NONE' for j in range(0, self.num)]
+        self.LOH_flag = ['NONE' for j in range(0, self.num)]
     
     def __getitem__(self, i):
         "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_flag"

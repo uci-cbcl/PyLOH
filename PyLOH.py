@@ -35,7 +35,7 @@ parser_jcnt.add_argument('--segments_bed_file_name', default=None, type=str,
 
 parser_jcnt.add_argument('--min_depth', default=20, type=int,
                           help='''Minimum depth of coverage in both tumor and normal sample required to use a site in
-                          the analysis. Default is 1.''')
+                          the analysis. Default is 20.''')
 
 parser_jcnt.add_argument('--min_base_qual', default=10, type=int,
                           help='''Remove bases with base quality lower than this. Default is 10.''')
