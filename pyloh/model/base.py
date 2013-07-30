@@ -47,8 +47,8 @@ class PriorParser(object):
         for i, genotype in enumerate(constants.GENOTYPES_TUMOR):
             self.priors['omega'][i] = self.parser.getfloat('omega', genotype)
 
-class ModelTrainer(object):
-    def __init__(self, priors, data, max_iters, stop_value):
+#class ModelTrainer(object):
+#    def __init__(self, priors, data, max_iters, stop_value):
 
 
 

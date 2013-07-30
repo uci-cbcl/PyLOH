@@ -162,6 +162,9 @@ class Data:
                 outfile.write(str(j) + '\t' + '\t'.join(map(str, self.paired_counts[j][i])) + '\n')
         
         outfile.close()
+        
+    def tumor_LOH_test():
+        self.segments.tumor_LOH_test(self.paired_counts)
 
 class Segments:
     def __init__(self):
@@ -172,6 +175,8 @@ class Segments:
         self.ends = []
         self.normal_reads_num = []
         self.tumor_reads_num = []
+        self.LOH_frec = []
+        self.LOH_flag = []
         
     def segmentation_by_chrom(self, normal_bam, tumor_bam):
         chrom_list = constants.CHROM_LIST
@@ -223,6 +228,12 @@ class Segments:
             self.tumor_reads_num.append(tumor_reads_num)
             self.num = self.num + 1
     
+    def tumor_LOH_test(self, paired_counts):
+        for j in range(0, self.num):
+            LOH_frec, LOH_flag = tumor_LOH_test(paired_counts[j])
+            self.LOH_frec.append(LOH_frec)
+            self.LOH_flag.append(LOH_flag)
+            
     def read_segfile(self, inseg_file_name):
         infile = open(inseg_file_name)
         
@@ -232,7 +243,9 @@ class Segments:
             
             fields = line.strip('\n').split('\t')
             seg_name, chrom = fields[0:2]
-            start, end, normal_reads_num, tumor_reads_num = map(int, fields[2:6])
+            start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_flag = map(int, fields[2:6])
+            LOH_frec = float(fields[6])
+            LOH_flag = bool(fields[7])
             
             self.names.append(seg_name)
             self.chroms.append(chrom)
@@ -240,6 +253,8 @@ class Segments:
             self.ends.append(end)
             self.normal_reads_num.append(normal_reads_num)
             self.tumor_reads_num.append(tumor_reads_num)
+            self.LOH_frec.append(LOH_frec)
+            self.LOH_flag.append(LOH_flag)
             
             self.num = self.num + 1
         
@@ -248,7 +263,8 @@ class Segments:
     def write_segfile(self, outseg_file_name):
         outfile = open(outseg_file_name, 'w')
         
-        outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num', 'tumor_reads_num']) + '\n')
+        outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num',
+                                 'tumor_reads_num', 'LOH_frec', 'LOH_flag']) + '\n')
         
         for j in range(0, self.num):
             outfile.write('\t'.join(map(str, self[j])) + '\n')
@@ -256,8 +272,10 @@ class Segments:
         outfile.close()
     
     def __getitem__(self, i):
-        "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num"
-        return (self.names[i], self.chroms[i], self.starts[i], self.ends[i], self.normal_reads_num[i], self.tumor_reads_num[i])
+        "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_flag"
+        return (self.names[i], self.chroms[i], self.starts[i], self.ends[i],
+                self.normal_reads_num[i], self.tumor_reads_num[i],
+                self.LOH_frec[i], self.LOH_flag[i])
         
     def _get_segment_name(self, chrom, start, end):
         return '_'.join([chrom, 'start', str(start), 'end', str(end)])
