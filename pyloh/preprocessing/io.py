@@ -80,6 +80,7 @@ class BamToDataConverter:
             paired_counts.append(paired_counts_j)
         
         data = Data(self.segments, paired_counts)
+        data.tumor_LOH_test()
         data.write_data(self.data_file_basename)
         
     def _convert_by_segments(self, paired_counts_iter):
@@ -163,7 +164,7 @@ class Data:
         
         outfile.close()
         
-    def tumor_LOH_test():
+    def tumor_LOH_test(self):
         self.segments.tumor_LOH_test(self.paired_counts)
 
 class Segments:
@@ -197,6 +198,7 @@ class Segments:
             self.tumor_reads_num.append(tumor_reads_num)
         
         self.num = chrom_num
+        self.__init_LOH_status()
         
     def segmentation_by_bed(self, normal_bam, tumor_bam, bed_file_name):
         chrom_list = constants.CHROM_LIST
@@ -213,7 +215,9 @@ class Segments:
                 print 'Chromsome {0} not found, segment {1} excluded...'.format(bed_chroms[i], seg_name)
                 continue
             
-            if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[i]:
+            chrom_idx = chrom_list.index(bed_chroms[i])
+            
+            if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[chrom_idx]:
                 print 'Out of range chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
                 continue
 
@@ -227,12 +231,14 @@ class Segments:
             self.normal_reads_num.append(normal_reads_num)
             self.tumor_reads_num.append(tumor_reads_num)
             self.num = self.num + 1
+            
+        self.__init_LOH_status()
     
     def tumor_LOH_test(self, paired_counts):
         for j in range(0, self.num):
             LOH_frec, LOH_flag = tumor_LOH_test(paired_counts[j])
-            self.LOH_frec.append(LOH_frec)
-            self.LOH_flag.append(LOH_flag)
+            self.LOH_frec[j] = LOH_frec
+            self.LOH_flag[j] = LOH_flag
             
     def read_segfile(self, inseg_file_name):
         infile = open(inseg_file_name)
@@ -270,6 +276,10 @@ class Segments:
             outfile.write('\t'.join(map(str, self[j])) + '\n')
         
         outfile.close()
+    
+    def __init_LOH_status(self):
+        self.LOH_frec = [None for j in range(0, self.num)]
+        self.LOH_flag = [None for j in range(0, self.num)]
     
     def __getitem__(self, i):
         "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_flag"
@@ -416,32 +426,9 @@ class PairedPileupIterator:
             elif normal_pos > tumor_pos:
                 tumor_column = self.tumor_iter.next()
             else:
-                raise Exception("Error in joint pileup iterator.")
+                raise Exception("Error in paired pileup iterator.")
 
-##=======================================================================================================================
-## Functions
-##=======================================================================================================================
-#
-#def BEDParser(bed_file_name):
-#    inbed = open(bed_file_name)
-#    
-#    chroms = []
-#    starts = []
-#    ends = []
-#    
-#    for line in inbed:
-#        if line[0:3] != 'chr':
-#            continue
-#        
-#        chrom, start, end = line.split('\t')[0:3]
-#        
-#        chroms.append(chrom)
-#        starts.append(int(start))
-#        ends.append(int(end))
-#            
-#    inbed.close()
-#    
-#    return (chroms, starts, ends)
+
     
     
     
