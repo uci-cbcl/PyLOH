@@ -253,7 +253,7 @@ class Segments:
             seg_name, chrom = fields[0:2]
             start, end, normal_reads_num, tumor_reads_num = map(int, fields[2:6])
             LOH_frec = float(fields[6])
-            #LOH_flag = bool(fields[7])
+            LOH_flag = fields[7]
             
             self.names.append(seg_name)
             self.chroms.append(chrom)
