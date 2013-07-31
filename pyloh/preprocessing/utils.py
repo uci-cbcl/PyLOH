@@ -51,12 +51,13 @@ def normal_heterozygous_filter(counts):
 def tumor_LOH_test(counts):
     BAF_T_MAX = constants.BAF_T_MAX
     BAF_T_MIN = constants.BAF_T_MIN
-    LOH_FREC_THRED = constants.LOH_FREC_THRED
+    LOH_FREC_MAX = constants.LOH_FREC_MAX
+    LOH_FREC_MIN = constants.LOH_FREC_MIN
     
     I = counts.shape[0]
     
     if I < constants.SITES_NUM_MIN:
-        LOH_frec = 0.0
+        LOH_frec = -1
         LOH_flag = 'NONE'
         
         return (LOH_frec, LOH_flag)
@@ -74,9 +75,13 @@ def tumor_LOH_test(counts):
     
     LOH_frec = LOH_num/I
     
-    if LOH_frec < LOH_FREC_THRED:
+    if LOH_frec < LOH_FREC_MIN:
         LOH_flag = 'FALSE'
-    else:
+    elif LOH_frec >= LOH_FREC_MIN and LOH_frec < LOH_FREC_MAX:
+        LOH_flag = 'UNCERTAIN'
+    elif LOH_frec >= LOH_FREC_MAX:
         LOH_flag = 'TRUE'
+    else:
+        LOH_flag = 'ERROR'
         
     return (LOH_frec, LOH_flag)
