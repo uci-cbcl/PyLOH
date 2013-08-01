@@ -58,9 +58,9 @@ def tumor_LOH_test(counts):
     
     if I < constants.SITES_NUM_MIN:
         LOH_frec = -1
-        LOH_flag = 'NONE'
+        LOH_status = 'NONE'
         
-        return (LOH_frec, LOH_flag)
+        return (LOH_frec, LOH_status)
     
     LOH_num = 0.0
     
@@ -76,12 +76,12 @@ def tumor_LOH_test(counts):
     LOH_frec = LOH_num/I
     
     if LOH_frec < LOH_FREC_MIN:
-        LOH_flag = 'FALSE'
+        LOH_status = 'FALSE'
     elif LOH_frec >= LOH_FREC_MIN and LOH_frec < LOH_FREC_MAX:
-        LOH_flag = 'UNCERTAIN'
+        LOH_status = 'UNCERTAIN'
     elif LOH_frec >= LOH_FREC_MAX:
-        LOH_flag = 'TRUE'
+        LOH_status = 'TRUE'
     else:
-        LOH_flag = 'ERROR'
+        LOH_status = 'ERROR'
         
-    return (LOH_frec, LOH_flag)
+    return (LOH_frec, LOH_status)
