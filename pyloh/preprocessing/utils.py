@@ -85,3 +85,17 @@ def tumor_LOH_test(counts):
         LOH_status = 'ERROR'
         
     return (LOH_frec, LOH_status)
+    
+def remove_outliers(X):
+    idx_keep = []
+    
+    n = X.shape[0]
+    
+    for i in range(0, n):
+        if np.abs(X[i] - X.mean()) <= X.std():
+            idx_keep.append(i)
+            
+    X = X[idx_keep]
+    
+    return X
+    

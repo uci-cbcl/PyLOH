@@ -6,7 +6,7 @@ segs <- getBICseg(object = bicseq, bin = 100, lambda = 2, winSize = 200, quant =
 
 seg.summary <- BICseq:::getSummary(segs, correction=TRUE)
 
-write.table(seg.summary, file = './intervals.BICseq', quote = FALSE, sep = '\t', row.names = FALSE, col.names = TRUE)
+write.table(seg.summary, file = './segments.BICseq', quote = FALSE, sep = '\t', row.names = FALSE, col.names = TRUE)
 
 
 

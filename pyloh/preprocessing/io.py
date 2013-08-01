@@ -172,6 +172,7 @@ class Data:
 class Segments:
     def __init__(self):
         self.num = 0
+        self.Lambda_S = 0
         self.names = []
         self.chroms = []
         self.starts = []
@@ -200,7 +201,7 @@ class Segments:
             self.tumor_reads_num.append(tumor_reads_num)
         
         self.num = chrom_num
-        self.__init_LOH_status()
+        self._init_LOH_status()
         
     def segmentation_by_bed(self, normal_bam, tumor_bam, bed_file_name):
         chrom_list = constants.CHROM_LIST
@@ -234,7 +235,7 @@ class Segments:
             self.tumor_reads_num.append(tumor_reads_num)
             self.num = self.num + 1
             
-        self.__init_LOH_status()
+        self._init_LOH_status()
     
     def tumor_LOH_test(self, paired_counts):
         for j in range(0, self.num):
@@ -242,6 +243,20 @@ class Segments:
             self.LOH_frec[j] = LOH_frec
             self.LOH_status[j] = LOH_status
             
+    def compute_Lambda_S(self):
+        reads_depth_ratio = []
+        
+        for j in range(0, self.num):
+            if self.LOH_status[j] == 'FALSE':
+                ratio = 1.0*self.tumor_reads_num[j]/self.normal_reads_num[j]
+                reads_depth_ratio.append(ratio)
+                
+        reads_depth_ratio = np.array(reads_depth_ratio)
+        reads_depth_ratio = remove_outliers(reads_depth_ratio)
+        
+        if reads_depth_ratio.shape[0] != 0:
+            self.Lambda_S = reads_depth_ratio.mean()
+        
     def read_segfile(self, inseg_file_name):
         infile = open(inseg_file_name)
         
@@ -279,7 +294,7 @@ class Segments:
         
         outfile.close()
     
-    def __init_LOH_status(self):
+    def _init_LOH_status(self):
         self.LOH_frec = ['NONE' for j in range(0, self.num)]
         self.LOH_status = ['NONE' for j in range(0, self.num)]
     
