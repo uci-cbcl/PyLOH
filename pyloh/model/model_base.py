@@ -11,10 +11,11 @@ from pyloh import constants
 from pyloh.preprocessing.io import Data
 
 class ProbabilisticModel(object):
-    def __init__(self, model_trainer_class):
+    def __init__(self):
         self.priors_parser = PriorParser()
-        self.model_trainer_class = model_trainer_class
         self.data = Data()
+        self._init_components()
+        
     
     def read_priors(self, priors_filename):
         self.priors_parser.read_priors(priors_filename)
@@ -35,6 +36,9 @@ class ProbabilisticModel(object):
         
     def write_parameters(self, filename_base):
         self.model_parameters.write_parameters(filename_base)
+
+    def _init_components(self):
+        raise NotImplemented
 
 #JointSNVMix
 class ModelTrainer(object):
@@ -134,8 +138,7 @@ class ModelParameters(object):
         raise NotImplemented
     
 class LogLikelihood(object):
-    def __init__(self, priors, data):
-        self.priors = priors
+    def __init__(self, data):
         self.data = data
         
     def get_log_likelihood(self, parameters):

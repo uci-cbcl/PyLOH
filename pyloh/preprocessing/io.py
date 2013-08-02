@@ -114,12 +114,25 @@ class Data:
     def __init__(self, segments=None, paired_counts=None):
         self.segments = Segments()
         self.paired_counts = []
+        self.sites_num = []
         self.seg_num = 0
         
         if segments != None and paired_counts != None:
             self.segments = segments
             self.paired_counts = paired_counts
+            self.sites_num = self._get_sites_num(paired_counts)
             self.seg_num = segments.num
+        
+    def _get_sites_num(self, paired_counts):
+        sites_num = []
+        seg_num = len(paired_counts)
+        
+        for j in range(0, seg_num):
+            sites_num.append(paired_counts[j].shape[0])
+            
+        sites_num = np.array(sites_num)
+        
+        return sites_num
 
     def read_data(self, filename_base):
         inseg_file_name = filename_base + '.segments'
@@ -128,6 +141,7 @@ class Data:
         self.segments.read_segfile(inseg_file_name)
         self.seg_num = self.segments.num
         self._read_counts(incounts_file_name)
+        self.sites_num = self._get_sites_num(self.paired_counts)
         
     def _read_counts(self, incounts_file_name):
         infile = open(incounts_file_name)
