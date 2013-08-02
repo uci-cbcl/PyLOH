@@ -62,8 +62,8 @@ class ModelTrainer(object):
         old_log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
   
         while converged == False:
-            self._M_step()
             self._E_step()
+            self._M_step()
 
             log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
             
@@ -86,24 +86,13 @@ class ModelTrainer(object):
             self.iters += 1
 
     def _E_step(self):
-        self.latent_variables.update(self.model_parameters.parameters)
+        self.latent_variables.update(self.model_parameters.parameters, self.iters)
         
     def _M_step(self):
         self.model_parameters.update(self.latent_variables.sufficient_statistics)
 
     def _print_running_info(self, iters, log_likelihood, old_log_likelihood, ll_change):
-        print "#" * 100
-        print "# Running Info."
-        print "#" * 100
-        print "Number of iterations : ", iters
-        print "New log-likelihood : ", log_likelihood
-        print "Old log-likelihood : ", old_log_likelihood 
-        print "Log-likelihood change : ", ll_change
-    
-        print "Parameters :"
-        
-        for param_name, param_value in self.model_parameters.parameters.items():
-            print param_name, param_value    
+        raise NotImplemented  
 
     def _init_components(self):
         raise NotImplemented
@@ -111,20 +100,14 @@ class ModelTrainer(object):
 class LatentVariables(object): 
     def __init__(self, data):       
         self.data = data
-        
-        self._init_sufficient_statistics(data)
 
     def update(self, parameters):
         raise NotImplemented
-       
-    def _init_sufficient_statistics(self, data):
-        raise NotImplemented
 
 class ModelParameters(object):
-    def __init__(self, priors, data, sufficient_statistics):
+    def __init__(self, priors, data):
         self.priors = priors
         self.data = data
-        self.sufficient_statistics = sufficient_statistics
         
         self._init_parameters()
     
