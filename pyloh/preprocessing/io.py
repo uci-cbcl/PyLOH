@@ -198,9 +198,11 @@ class Segments:
         
     def segmentation_by_chrom(self, normal_bam, tumor_bam):
         chrom_list = constants.CHROM_LIST
-        chrom_lens = constants.CHROM_LENS
         chrom_start = constants.CHROM_START
         chrom_num = len(chrom_list)
+        
+        header_SQ = normal_bam.header['SQ']
+        chrom_lens = self._get_chrom_lens(chrom_list, header_SQ)
         
         for i in range(0, chrom_num):
             seg_name = self._get_segment_name(chrom_list[i], chrom_start, chrom_lens[i])
@@ -219,8 +221,10 @@ class Segments:
         
     def segmentation_by_bed(self, normal_bam, tumor_bam, bed_file_name):
         chrom_list = constants.CHROM_LIST
-        chrom_lens = constants.CHROM_LENS
         chrom_start = constants.CHROM_START
+        
+        header_SQ = normal_bam.header['SQ']
+        chrom_lens = self._get_chrom_lens(chrom_list, header_SQ)
         
         bed_chroms, bed_starts, bed_ends = BEDParser(bed_file_name)
         bed_num = len(bed_chroms)
@@ -251,6 +255,19 @@ class Segments:
             
         self._init_LOH_status()
     
+    def _get_chrom_lens(chrom_list, header_SQ):
+        chrom_lens = []
+        
+        for i in range(0, len(chrom_list)):
+            chrom = chrom_list[i]
+            
+            for j in range(0, len(header_SQ)):
+                if chrom == header_SQ[j]['SN']:
+                    chrom_lens.append(int(header_SQ[j]['LN']))
+                    break
+        
+        return chrom_lens
+        
     def tumor_LOH_test(self, paired_counts):
         for j in range(0, self.num):
             LOH_frec, LOH_status = tumor_LOH_test(paired_counts[j])
