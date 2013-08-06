@@ -255,7 +255,7 @@ class Segments:
             
         self._init_LOH_status()
     
-    def _get_chrom_lens(chrom_list, header_SQ):
+    def _get_chrom_lens(self, chrom_list, header_SQ):
         chrom_lens = []
         
         for i in range(0, len(chrom_list)):
