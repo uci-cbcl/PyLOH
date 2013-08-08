@@ -3,6 +3,7 @@ Created on 2013-07-20
 
 @author: Yi Li
 '''
+import sys
 from collections import Counter
 
 import numpy as np
@@ -24,9 +25,11 @@ def preprocess(args):
     
     if args.segments_bed_file_name == None:
         print 'Loading segments by 22 autosomes...'
+        sys.stdout.flush()
         segments.segmentation_by_chrom(normal_bam, tumor_bam)
     else:
         print 'Loading segments by {0}...'.format(args.segments_bed_file_name)
+        sys.stdout.flush()
         segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed_file_name)
                
     converter = BamToDataConverter(
@@ -64,6 +67,7 @@ class BamToDataConverter:
         
         for j in range(0, seg_num):
             print 'Preprocessing segment {0}...'.format(self.segments[j][0])
+            sys.stdout.flush()
             
             chrom = self.segments[j][1]
             start = self.segments[j][2]
@@ -234,12 +238,14 @@ class Segments:
             
             if bed_chroms[i] not in chrom_list:
                 print 'Chromsome {0} not found, segment {1} excluded...'.format(bed_chroms[i], seg_name)
+                sys.stdout.flush()
                 continue
             
             chrom_idx = chrom_list.index(bed_chroms[i])
             
             if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[chrom_idx]:
                 print 'Out of range chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
+                sys.stdout.flush()
                 continue
 
             normal_reads_num = normal_bam.count(bed_chroms[i], bed_starts[i], bed_ends[i])
