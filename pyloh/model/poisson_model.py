@@ -121,11 +121,13 @@ class PoissonModelParameters(ModelParameters):
         
         self.parameters = parameters
     
-    def _update_rho(psi, u):
+    def _update_rho(self, psi, u):
         x1 = constants.UPDATE_WEIGHTS['x1']
         y1 = constants.UPDATE_WEIGHTS['y1']
         z1 = constants.UPDATE_WEIGHTS['z1']
         
+        J = self.data.seg_num
+        G = constants.GENOTYPES_TUMOR_NUM
         I = np.array(self.data.sites_num)
         
         rho_CNV = psi
@@ -153,17 +155,19 @@ class PoissonModelParameters(ModelParameters):
 
         phi_CNV = np.zeros(J)
         phi_LOH = np.zeros(J)
+        weights_CNV = np.zeros(J)
+        weights_LOH = np.zeros(J)
         
         for j in range(0, J):
             D_N_j = self.data.segments[j][4]
             D_T_j = self.data.segments[j][5]
         
             c_E_j = D_T_j*c_N[0]/(D_N_j*Lambda_S)
-            mu_E_j = v_j/w_j
+            mu_E_j = v[j]/w[j]
             
             if c_E_j < min(c_T):
                 c_E_j = min(c_T)
-            elif e_E_j > max(c_T):
+            elif c_E_j > max(c_T):
                 c_E_j = max(c_T)
             
             for g in range(0, G):
@@ -172,9 +176,12 @@ class PoissonModelParameters(ModelParameters):
                 if mu_E_j[g] > max(mu_T):
                     mu_E_j[g] = max(mu_T)
             
-            phi_CNV[j], phi_LOH[j] = self._update_phi_by_segment(c_E_j, mu_E_j, rho[j])
+            phi_CNV[j], phi_LOH[j], weights_CNV[j], weights_LOH[j] = self._update_phi_by_segment(c_E_j, mu_E_j, rho[j])
         
-        phi = x2*phi_CNV.mean() + y2*phi_LOH.mean()
+        phi_CNV_mean = np.average(phi_CNV, weights = weights_CNV)
+        phi_LOH_mean = np.average(phi_LOH, weights = weights_LOH)
+        
+        phi = x2*phi_CNV_mean + y2*phi_LOH_mean
         
         return phi
 
@@ -209,31 +216,31 @@ class PoissonModelParameters(ModelParameters):
         
         phi_CNV_j = 0
         phi_LOH_j = 0
-        prob_sum_CNV = 0
-        prob_sum_LOH = 0
+        prob_sum_CNV_j = 0
+        prob_sum_LOH_j = 0
          
         for g in range(0, G):
             phi_CNV_j_g = -1
             phi_LOH_j_g = -1
             
             if c_N[0] != c_T[g]:
-                phi_CNV_j_g = get_phi(c_N[0], c_T[g], c_E_j)
+                phi_CNV_j_g = get_phi_CNV(c_N[0], c_T[g], c_E_j)
             
             if mu_N[0] != mu_T[g]:
-                phi_LOH_j_g = get_phi(mu_N[0], mu_T[g], mu_E_j[g])
+                phi_LOH_j_g = get_phi_LOH(mu_N[0], mu_T[g], mu_E_j[g], c_N[0], c_T[g])
                 
             if phi_CNV_j_g >= 0 and phi_CNV_j_g <= 1:
                 phi_CNV_j = phi_CNV_j + rho_j[g]*phi_CNV_j_g
-                prob_sum_CNV = prob_sum_CNV + rho_j[g]
+                prob_sum_CNV_j = prob_sum_CNV_j + rho_j[g]
                 
             if phi_LOH_j_g >= 0 and phi_LOH_j_g <= 1:
                 phi_LOH_j = phi_LOH_j + rho_j[g]*phi_LOH_j_g
-                prob_sum_LOH = prob_sum_LOH + rho_j[g]
+                prob_sum_LOH_j = prob_sum_LOH_j + rho_j[g]
                 
-        phi_CNV_j = phi_CNV_j/prob_sum_CNV
-        phi_LOH_j = phi_LOH_j/prob_sum_LOH
-        
-        return (phi_CNV_j, phi_LOH_j)
+        phi_CNV_j = phi_CNV_j/prob_sum_CNV_j
+        phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
+                
+        return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
 
 #===============================================================================
 # Function

@@ -52,3 +52,11 @@ def get_x_E(x_N, x_T, phi):
 def get_phi(x_N, x_T, x_E):
     
     return (x_E - x_N)/(x_T - x_N)
+    
+def get_phi_CNV(c_N, c_T, c_E):
+    
+    return (c_E - c_N)/(c_T - c_N)
+    
+def get_phi_LOH(mu_N, mu_T, mu_E, c_N, c_T):
+    
+    return (mu_N - mu_E)*c_N/((mu_E - mu_T)*c_T + (mu_N - mu_E)*c_N)
