@@ -366,7 +366,7 @@ class PairedCountsIterator:
                 continue
             
             pos = normal_column.pos
-            ref_base = self.ref_genome_fasta.fetch(self.chrom, pos, pos + 1)
+            ref_base = self.ref_genome_fasta.fetch(self.chrom, pos, pos + 1).upper()
             
             paired_counts = self._get_paired_counts(normal_column, tumor_column, pos, ref_base)
             
@@ -380,9 +380,9 @@ class PairedCountsIterator:
         normal_bases = self._parse_pileup_column(normal_column)
         tumor_bases = self._parse_pileup_column(tumor_column)
         
+        normal_non_ref_base, normal_counts = self._get_counts(ref_base, normal_bases) 
         tumor_non_ref_base, tumor_counts = self._get_counts(ref_base, tumor_bases)        
-        normal_non_ref_base, normal_counts = self._get_counts(ref_base, normal_bases, non_ref_base=tumor_non_ref_base)        
-    
+
         # Check again for lines below read depth. The first check above speeds things up, though redundant.
         normal_depth = normal_counts[0] + normal_counts[1]
         tumor_depth = tumor_counts[0] + tumor_counts[1]
@@ -418,7 +418,7 @@ class PairedCountsIterator:
             if bqual < self.min_bqual:
                 continue
             
-            base = read.alignment.seq[qpos]
+            base = read.alignment.seq[qpos].upper()
             bases.append(base)
         
         return bases

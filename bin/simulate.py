@@ -96,7 +96,7 @@ def main():
         if pos >= centromere_starts[chrom] and pos <= centromere_ends[chrom]:
             continue
         
-        if np.random.rand() <= p_paternal:
+        if np.random.rand() <= 0.5:
             seq = normal_p_fasta.fetch(chrom, pos, pos + reads_len)
             flag = 'paternal'
         else:
@@ -112,6 +112,7 @@ def main():
             time_runing = time.time() - time_current
             time_current = time.time()
             print '{0} normal reads simulated...{1} sec'.format(i, time_runing)
+            sys.stdout.flush()
     
     #simulate tumor reads
     for i in range(0, reads_num):
@@ -121,18 +122,29 @@ def main():
         end = ends[j]
         p_copy = p_copies[j]
         m_copy = m_copies[j]
+        c_T = p_copy + m_copy
+        p_tumor = tumor_frec*c_T/(tumor_frec*c_T + (1 - tumor_frec)*c_N)
         if p_copy == 0 and m_copy == 0:
             p_paternal = 0.5
         else:
             p_paternal = p_copy*1.0/(p_copy + m_copy)
                 
         pos = np.random.random_integers(start, end - reads_len, 1)[0]
-        if np.random.rand() <= p_paternal:
-            seq = tumor_p_fasta.fetch(chrom, pos, pos + reads_len)
-            flag = 'paternal'
+        
+        if np.random.rand() <= p_tumor:
+            if np.random.rand() <= p_paternal:
+                seq = tumor_p_fasta.fetch(chrom, pos, pos + reads_len)
+                flag = 'paternal'
+            else:
+                seq = tumor_m_fasta.fetch(chrom, pos, pos + reads_len)
+                flag = 'maternal'
         else:
-            seq = tumor_m_fasta.fetch(chrom, pos, pos + reads_len)
-            flag = 'maternal'
+            if np.random.rand() <= 0.5:
+                seq = normal_p_fasta.fetch(chrom, pos, pos + reads_len)
+                flag = 'paternal'
+            else:
+                seq = normal_m_fasta.fetch(chrom, pos, pos + reads_len)
+                flag = 'maternal'
         
         outtumor.write('@{0}:{1}:{2}:{3}\n'.format(i + 1, flag, chrom, pos))
         outtumor.write('\n'.join([seq, '+', phred]) + '\n')
@@ -141,6 +153,7 @@ def main():
             time_runing = time.time() - time_current
             time_current = time.time()
             print '{0} tumor reads simulated...{1} sec'.format(i, time_runing)
+            sys.stdout.flush()
 
     time_end = time.time()
     

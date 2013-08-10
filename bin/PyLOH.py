@@ -7,7 +7,8 @@ import os
 from matplotlib import pyplot
 from joint_snv_mix.file_formats.jcnt import JointCountsReader
 from joint_snv_mix.classification.utils.log_pdf import log_binomial_likelihood
-from joint_snv_mix.classification.utils.normalise import log_space_normalise_rows_annealing
+#from joint_snv_mix.classification.utils.normalise import log_space_normalise_rows_annealing
+from joint_snv_mix.classification.utils.normalise import log_space_normalise_rows
 
 COUNTS_MIN = 10
 COUNTS_MAX = 95
@@ -28,12 +29,14 @@ BURN_IN = 30
 GENOTYPES_NORMAL = ['AB']
 GENOTYPES_TUMOR = ['A', 'B', 'AA', 'AB', 'BB', 'AAB', 'ABB', 'AABB']
 GENOTYPES_TUMOR_NUM = len(GENOTYPES_TUMOR)
+C_N = [2]
+C_T = [1, 1, 2, 2, 2, 3, 3, 4]
 MU_N = [EMPIRI_BAF/(EMPIRI_BAF + EMPIRI_AAF)]
 MU_T = [ERR, 1-ERR, ERR, EMPIRI_BAF/(EMPIRI_BAF + EMPIRI_AAF), 1-ERR,
         EMPIRI_BAF*1/(EMPIRI_BAF*1 + EMPIRI_AAF*2),
         EMPIRI_BAF*2/(EMPIRI_BAF*2 + EMPIRI_AAF*1),
         EMPIRI_BAF/(EMPIRI_BAF + EMPIRI_AAF)]
-omega = np.array([400, 400, 2, 100, 2, 2, 2, 2])
+omega = np.array([1000, 1000, 2, 100, 2, 2, 2, 2])
 
 
 CHROM_LIST = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
@@ -87,6 +90,10 @@ def get_mu_H(mu_N, mu_T, phi):
 def get_phi(mu_N, mu_T, mu_H):
     
     return (mu_H - mu_N)/(mu_T - mu_N)
+    
+def get_phi_c(mu_N, mu_T, c_N, c_T, mu_H):
+    
+    return (mu_N - mu_H)*c_N/((mu_H - mu_T)*c_T + (mu_N - mu_H)*c_N)
 
 def log_likelihoods(counts, phi, rho):
     I = counts.shape[0]
@@ -168,7 +175,8 @@ def main():
             d_T_j = counts[j][:, 2] + counts[j][:, 3]
             
             log_likelihoods_j = log_likelihoods(counts[j], phi, rho[j])
-            xi_j = log_space_normalise_rows_annealing(log_likelihoods_j, eta)
+            #xi_j = log_space_normalise_rows_annealing(log_likelihoods_j, eta)
+            xi_j = log_space_normalise_rows(log_likelihoods_j)
             
             u_j = np.add.reduce(xi_j, axis = 0)
             v_j = xi_j*np.dot(b_T_j.reshape(I[j], 1), np.ones((1, G)))
@@ -200,7 +208,8 @@ def main():
                 elif mu_H_j[g] > 1 - ERR:
                     mu_H_j[g] = 1 - ERR
                     
-                phi_j_g = get_phi(MU_N[0], MU_T[g], mu_H_j[g])
+                #phi_j_g = get_phi(MU_N[0], MU_T[g], mu_H_j[g])
+                phi_j_g = get_phi_c(MU_N[0], MU_T[g], C_N[0], C_T[g], mu_H_j[g])
                 
                 phi_est[j, g] = phi_j_g
                 
