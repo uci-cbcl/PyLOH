@@ -4,6 +4,7 @@ Created on 2013-07-20
 @author: Yi Li
 '''
 import sys
+import time
 from collections import Counter
 
 import numpy as np
@@ -31,7 +32,9 @@ def preprocess(args):
         print 'Loading segments by {0}...'.format(args.segments_bed_file_name)
         sys.stdout.flush()
         segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed_file_name)
-               
+    
+    time_start = time.time()           
+    
     converter = BamToDataConverter(
                                    normal_bam,
                                    tumor_bam,
@@ -44,6 +47,10 @@ def preprocess(args):
                                    )
     
     converter.convert()
+    
+    time_end = time.time()
+    
+    print 'Run time: {0:.2f} seconds'.format(time_end - time_start)
 
 #JointSNVMix
 class BamToDataConverter:
