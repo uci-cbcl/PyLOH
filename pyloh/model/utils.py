@@ -49,6 +49,14 @@ def get_x_E(x_N, x_T, phi):
     
     return (1 - phi)*x_N + phi*x_T
     
+def get_c_E(c_N, c_T, phi):
+    
+    return (1 - phi)*c_N + phi*c_T
+
+def get_mu_E(mu_N, mu_T, c_N, c_T, phi):
+    
+    return ((1 - phi)*c_N*mu_N + phi*c_T*mu_T)/((1 - phi)*c_N + phi*c_T)
+    
 def get_phi(x_N, x_T, x_E):
     
     return (x_E - x_N)/(x_T - x_N)

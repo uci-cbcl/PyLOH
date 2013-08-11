@@ -65,6 +65,7 @@ class ModelTrainer(object):
             self._E_step()
             self._M_step()
 
+            parameters = self.model_parameters.parameters
             log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
             
             if self.iters > 0:

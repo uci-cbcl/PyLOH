@@ -296,8 +296,10 @@ def poisson_ll_func_LOH(b_T, d_T, rho, phi):
     I = d_T.shape[0]
     mu_N = np.array(constants.MU_N)
     mu_T = np.array(constants.MU_T)
+    c_N = np.array(constants.COPY_NUMBER_NORMAL)
+    c_T = np.array(constants.COPY_NUMBER_TUMOR)
     
-    mu_E = get_x_E(mu_N, mu_T, phi)
+    mu_E = get_mu_E(mu_N, mu_T, c_N, c_T, phi)
         
     log_likelihoods = np.log(rho) + log_binomial_likelihood(b_T, d_T, mu_E)
     
@@ -307,7 +309,7 @@ def poisson_ll_func_CNV(D_N, D_T, Lambda_S, rho, phi):
     c_N = np.array(constants.COPY_NUMBER_NORMAL)
     c_T = np.array(constants.COPY_NUMBER_TUMOR)
     
-    c_E = get_x_E(c_N, c_T, phi)
+    c_E = get_c_E(c_N, c_T, phi)
     
     lambda_E = D_N*c_E*Lambda_S/c_N
     
