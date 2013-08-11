@@ -41,7 +41,9 @@ class PoissonModelTrainer(ModelTrainer):
         print "Log-likelihood change : ", ll_change
     
         print "Parameters :"
-        print "Tumor celluar frequency: {0}".format(self.model_parameters.parameters['phi']) 
+        print "Tumor celluar frequency by CNV: {0}".format(self.model_parameters.parameters['phi_CNV'])
+        print "Tumor celluar frequency by LOH: {0}".format(self.model_parameters.parameters['phi_LOH'])
+        print "Tumor celluar frequency combined: {0}".format(self.model_parameters.parameters['phi']) 
         
 class PoissonLatentVariables(LatentVariables):
     def __init__(self, data):
@@ -114,10 +116,12 @@ class PoissonModelParameters(ModelParameters):
         w = sufficient_statistics['w']
         
         rho = self._update_rho(psi, u)
-        phi = self._update_phi(v, w, rho)
+        phi, phi_CNV, phi_LOH = self._update_phi(v, w, rho)
         
         parameters['rho'] = rho
         parameters['phi'] = phi
+        parameters['phi_CNV'] = phi_CNV
+        parameters['phi_LOH'] = phi_LOH
         
         self.parameters = parameters
     
@@ -183,12 +187,14 @@ class PoissonModelParameters(ModelParameters):
         
         phi = x2*phi_CNV_mean + y2*phi_LOH_mean
         
-        return phi
+        return phi, phi_CNV_mean, phi_LOH_mean
 
     def _init_parameters(self):
         parameters = {}
         
         parameters['phi'] = constants.PHI_INIT
+        parameters['phi_CNV'] = constants.PHI_INIT
+        parameters['phi_LOH'] = constants.PHI_INIT
         parameters['rho'] = self._update_rho_by_priors()
         
         self.parameters = parameters
@@ -241,6 +247,46 @@ class PoissonModelParameters(ModelParameters):
         phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
                 
         return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
+
+class PoissonLogLikelihood(LogLikelihood):
+    def __init__(self, data):
+        LogLikelihood.__init__(self, data)
+    
+    def get_log_likelihood(self, parameters):
+        J = self.data.seg_num
+        
+        log_likelihood = 0
+        
+        for j in range(0, J):
+            log_likelihood_j = self._get_log_likelihood_by_segment(parameters, j)
+            log_likelihood += log_likelihood_j
+            
+        return log_likelihood
+    
+    def _get_log_likelihood_by_segment(self, parameters, j):
+        G = constants.GENOTYPES_TUMOR_NUM
+        
+        a_T_j = self.data.paired_counts[j][:, 2]
+        b_T_j = self.data.paired_counts[j][:, 3]
+        d_T_j = a_T_j + b_T_j
+        I_j = d_T_j.shape[0]
+        D_N_j = self.data.segments[j][4]
+        D_T_j = self.data.segments[j][5]
+        rho_j = parameters['rho'][j]
+        phi = parameters['phi']
+        
+        Lambda_S = self.data.segments.Lambda_S
+        
+        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
+        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, Lambda_S, rho_j, phi)
+        
+        log_likelihoods_LOH = np.logaddexp.reduce(log_likelihoods_LOH, axis = 1)
+        log_likelihoods_CNV = np.logaddexp.reduce(log_likelihoods_CNV, axis = 1)
+        
+        log_likelihood_j = log_likelihoods_LOH.sum() + log_likelihoods_CNV.sum()
+        
+        return log_likelihood_j
+    
 
 #===============================================================================
 # Function
