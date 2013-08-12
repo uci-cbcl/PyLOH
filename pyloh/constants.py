@@ -19,6 +19,7 @@ PHI_INIT = 0.1
 #ETA = 1.01
 ETA = 1
 BURN_IN = 30
+EPS = np.finfo(float).eps
 
 GENOTYPES_NORMAL = ['AB']
 GENOTYPES_TUMOR = ['NULL', 'A', 'B', 'AA', 'AB', 'BB', 'AAB', 'ABB', 'AABB']

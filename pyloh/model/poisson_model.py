@@ -115,10 +115,12 @@ class PoissonModelParameters(ModelParameters):
         v = sufficient_statistics['v']
         w = sufficient_statistics['w']
         
-        rho = self._update_rho(psi, u)
-        phi, phi_CNV, phi_LOH = self._update_phi(v, w, rho)
+        rho, rho_CNV, rho_LOH = self._update_rho(psi, u)
+        phi, phi_CNV, phi_LOH = self._update_phi(v, w, rho, rho_CNV, rho_LOH)
         
         parameters['rho'] = rho
+        parameters['rho_CNV'] = rho_CNV
+        parameters['rho_LOH'] = rho_LOH
         parameters['phi'] = phi
         parameters['phi_CNV'] = phi_CNV
         parameters['phi_LOH'] = phi_LOH
@@ -142,9 +144,9 @@ class PoissonModelParameters(ModelParameters):
         
         rho = x1*rho_CNV + y1*rho_LOH + z1*rho_priors
         
-        return rho
+        return rho, rho_CNV, rho_LOH
     
-    def _update_phi(self, v, w, rho):
+    def _update_phi(self, v, w, rho, rho_CNV, rho_LOH):
         x2 = constants.UPDATE_WEIGHTS['x2']
         y2 = constants.UPDATE_WEIGHTS['y2']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
@@ -180,7 +182,8 @@ class PoissonModelParameters(ModelParameters):
                 if mu_E_j[g] > max(mu_T):
                     mu_E_j[g] = max(mu_T)
             
-            phi_CNV[j], phi_LOH[j], weights_CNV[j], weights_LOH[j] = self._update_phi_by_segment(c_E_j, mu_E_j, rho[j])
+            phi_CNV[j], phi_LOH[j], weights_CNV[j], weights_LOH[j] = self._update_phi_by_segment(c_E_j, mu_E_j,
+                                                                                rho[j], rho_CNV[j], rho_LOH[j])
         
         phi_CNV_mean = np.average(phi_CNV, weights = weights_CNV)
         phi_LOH_mean = np.average(phi_LOH, weights = weights_LOH)
@@ -196,6 +199,8 @@ class PoissonModelParameters(ModelParameters):
         parameters['phi_CNV'] = constants.PHI_INIT
         parameters['phi_LOH'] = constants.PHI_INIT
         parameters['rho'] = self._update_rho_by_priors()
+        parameters['rho_CNV'] = parameters['rho']
+        parameters['rho_LOH'] = parameters['rho']
         
         self.parameters = parameters
         
@@ -212,11 +217,12 @@ class PoissonModelParameters(ModelParameters):
             
         return rho
     
-    def _update_phi_by_segment(self, c_E_j, mu_E_j, rho_j):
+    def _update_phi_by_segment(self, c_E_j, mu_E_j, rho_j, rho_CNV_j, rho_LOH_j):
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(constants.COPY_NUMBER_TUMOR)
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(constants.MU_T)
+        eps = constants.EPS
         
         G = constants.GENOTYPES_TUMOR_NUM
         
@@ -236,13 +242,18 @@ class PoissonModelParameters(ModelParameters):
                 phi_LOH_j_g = get_phi_LOH(mu_N[0], mu_T[g], mu_E_j[g], c_N[0], c_T[g])
                 
             if phi_CNV_j_g >= 0 and phi_CNV_j_g <= 1:
-                phi_CNV_j = phi_CNV_j + rho_j[g]*phi_CNV_j_g
-                prob_sum_CNV_j = prob_sum_CNV_j + rho_j[g]
+                phi_CNV_j = phi_CNV_j + rho_CNV_j[g]*phi_CNV_j_g
+                prob_sum_CNV_j = prob_sum_CNV_j + rho_CNV_j[g]
                 
             if phi_LOH_j_g >= 0 and phi_LOH_j_g <= 1:
-                phi_LOH_j = phi_LOH_j + rho_j[g]*phi_LOH_j_g
-                prob_sum_LOH_j = prob_sum_LOH_j + rho_j[g]
+                phi_LOH_j = phi_LOH_j + rho_LOH_j[g]*phi_LOH_j_g
+                prob_sum_LOH_j = prob_sum_LOH_j + rho_LOH_j[g]
                 
+        if prob_sum_CNV_j == 0:
+            prob_sum_CNV_j = eps
+        if prob_sum_LOH_j == 0:
+            prob_sum_LOH_j = eps
+        
         phi_CNV_j = phi_CNV_j/prob_sum_CNV_j
         phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
                 
