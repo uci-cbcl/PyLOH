@@ -4,6 +4,7 @@
 # PyLOH
 # Author : Yi Li
 # E-mail : yil8@uci.edu
+# Notes  : Some programing structures are based JointSNVMix (http://code.google.com/p/joint-snv-mix/)
 #=======================================================================================================================
 import argparse
 
