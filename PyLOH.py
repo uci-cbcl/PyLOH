@@ -8,6 +8,8 @@
 import argparse
 
 from pyloh.preprocessing.io import preprocess
+from pyloh.model.run_model import run_model
+
 
 parser = argparse.ArgumentParser(prog='PyLOH')
 subparsers = parser.add_subparsers()
@@ -45,7 +47,27 @@ parser_preprocess.add_argument('--min_map_qual', default=10, type=int,
 
 parser_preprocess.set_defaults(func=preprocess)
 
+#===============================================================================
+# Add run_model sub-command
+#===============================================================================
+parser_run_model = subparsers.add_parser('run_model',
+                                      help='''Run a Poisson model based analysis. Requires preprocessed counts
+                                      file and segments file that have been created.''')
 
+parser_run_model.add_argument('data_file_basename',
+                            help='Base name of preprocessed counts and segments files created.')
+
+parser_run_model.add_argument('priors_file_name',
+                             help='File containing prior distribution to use for training.')
+
+parser_run_model.add_argument('--max_iters', default=100, type=int,
+                          help='''Maximum number of iterations to used for training model. Default 100''')
+
+parser_run_model.add_argument('--stop_value', default=1e-10, type=float,
+                          help='''Stop value for EM training. Once the change in log-likelihood function is below
+                          this value training will end. Defaul 1e-10''')
+
+parser_run_model.set_defaults(func=run_model)
 
 
 

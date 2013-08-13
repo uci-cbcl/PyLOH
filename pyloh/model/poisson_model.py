@@ -18,7 +18,7 @@ class PoissonProbabilisticModel(ProbabilisticModel):
         self.data.segments.compute_Lambda_S()
         
     def _init_components(self):
-        self.trainer_class = PoissonModelTrainer
+        self.model_trainer_class = PoissonModelTrainer
         
 class PoissonModelTrainer(ModelTrainer):
     def __init__(self, priors, data, max_iters, stop_value):
