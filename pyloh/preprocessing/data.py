@@ -33,8 +33,8 @@ class Data:
         return sites_num
 
     def read_data(self, filename_base):
-        inseg_file_name = filename_base + '.segments'
-        incounts_file_name = filename_base + '.counts'
+        inseg_file_name = filename_base + '.PyLOH.segments'
+        incounts_file_name = filename_base + '.PyLOH.counts'
             
         self.segments.read_segfile(inseg_file_name)
         self.seg_num = self.segments.num
@@ -61,8 +61,8 @@ class Data:
         infile.close()
 
     def write_data(self, filename_base):
-        outseg_file_name = filename_base + '.segments'
-        outcounts_file_name = filename_base + '.counts'
+        outseg_file_name = filename_base + '.PyLOH.segments'
+        outcounts_file_name = filename_base + '.PyLOH.counts'
         
         self.segments.write_segfile(outseg_file_name)
         self._write_counts(outcounts_file_name)
