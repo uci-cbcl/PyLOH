@@ -6,7 +6,7 @@ Created on 2013-08-13
 import numpy as np
 
 from pyloh import constants
-from pyloh.preprocessing.utils import *
+from pyloh.preprocess.utils import *
 
 class Data:
     def __init__(self, segments=None, paired_counts=None):

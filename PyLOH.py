@@ -8,7 +8,7 @@
 #=======================================================================================================================
 import argparse
 
-from pyloh.preprocessing.io import preprocess
+from pyloh.preprocess.io import preprocess
 from pyloh.model.run_model import run_model
 
 

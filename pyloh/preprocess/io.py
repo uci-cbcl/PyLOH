@@ -11,8 +11,8 @@ import numpy as np
 import pysam
 
 from pyloh import constants
-from pyloh.preprocessing.data import Data, Segments
-from pyloh.preprocessing.utils import *
+from pyloh.preprocess.data import Data, Segments
+from pyloh.preprocess.utils import *
 
 ascii_offset = 33
 

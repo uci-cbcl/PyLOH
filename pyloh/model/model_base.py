@@ -8,7 +8,7 @@ from ConfigParser import ConfigParser
 import numpy as np
 
 from pyloh import constants
-from pyloh.preprocessing.io import Data
+from pyloh.preprocess.io import Data
 
 class ProbabilisticModel(object):
     def __init__(self):
