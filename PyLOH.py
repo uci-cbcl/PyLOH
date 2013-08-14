@@ -4,11 +4,11 @@
 # PyLOH
 # Author : Yi Li
 # E-mail : yil8@uci.edu
-# Notes  : Some programing structures are based JointSNVMix (http://code.google.com/p/joint-snv-mix/)
+# Notes  : Some design patterns are based on JointSNVMix (http://code.google.com/p/joint-snv-mix/)
 #=======================================================================================================================
 import argparse
 
-from pyloh.preprocess.io import preprocess
+from pyloh.preprocess.run_preprocess import run_preprocess
 from pyloh.model.run_model import run_model
 
 
@@ -46,7 +46,7 @@ parser_preprocess.add_argument('--min_base_qual', default=10, type=int,
 parser_preprocess.add_argument('--min_map_qual', default=10, type=int,
                           help='''Remove bases with mapping quality lower than this. Default is 10.''')
 
-parser_preprocess.set_defaults(func=preprocess)
+parser_preprocess.set_defaults(func=run_preprocess)
 
 #===============================================================================
 # Add run_model sub-command

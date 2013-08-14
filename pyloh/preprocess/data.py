@@ -3,6 +3,7 @@ Created on 2013-08-13
 
 @author: Yi Li
 '''
+import sys
 import numpy as np
 
 from pyloh import constants

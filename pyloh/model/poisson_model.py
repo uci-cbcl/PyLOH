@@ -6,7 +6,7 @@ Created on 2013-07-31
 import numpy as np
 
 from pyloh import constants
-from pyloh.preprocess.io import Data
+from pyloh.preprocess.data import Data
 from pyloh.model.model_base import *
 from pyloh.model.utils import *
 
