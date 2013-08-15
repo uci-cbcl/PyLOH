@@ -46,6 +46,9 @@ parser_preprocess.add_argument('--min_base_qual', default=10, type=int,
 parser_preprocess.add_argument('--min_map_qual', default=10, type=int,
                           help='''Remove bases with mapping quality lower than this. Default is 10.''')
 
+parser_preprocess.add_argument('--process_num', default=1, type=int,
+                          help='''Number of processes to launch for preprocessing. Default is 1.''')
+
 parser_preprocess.set_defaults(func=run_preprocess)
 
 #===============================================================================

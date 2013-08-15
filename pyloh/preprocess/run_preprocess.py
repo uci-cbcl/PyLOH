@@ -5,6 +5,7 @@ Created on 2013-08-14
 '''
 import sys
 import time
+from multiprocessing import Pool
 
 import numpy as np
 import pysam
@@ -14,12 +15,9 @@ from pyloh.preprocess.data import Data, Segments
 from pyloh.preprocess.io import PairedCountsIterator, PairedPileupIterator
 from pyloh.preprocess.utils import *
 
-#JointSNVMix
 def run_preprocess(args):        
     normal_bam = pysam.Samfile(args.normal_bam_file_name, 'rb')
     tumor_bam = pysam.Samfile(args.tumor_bam_file_name, 'rb')
-    
-    ref_genome_fasta = pysam.Fastafile(args.reference_genome_file_name)
     
     segments = Segments()
     
@@ -32,17 +30,21 @@ def run_preprocess(args):
         sys.stdout.flush()
         segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed_file_name)
     
+    normal_bam.close()
+    tumor_bam.close()
+    
     time_start = time.time()           
     
     converter = BamToDataConverter(
-                                   normal_bam,
-                                   tumor_bam,
-                                   ref_genome_fasta,
+                                   args.normal_bam_file_name,
+                                   args.tumor_bam_file_name,
+                                   args.reference_genome_file_name,
                                    args.data_file_basename,
                                    segments,
                                    min_depth=args.min_depth,
                                    min_bqual=args.min_base_qual,
                                    min_mqual=args.min_map_qual,
+                                   process_num = args.process_num
                                    )
     
     converter.convert()
@@ -52,71 +54,105 @@ def run_preprocess(args):
     print 'Run time: {0:.2f} seconds'.format(time_end - time_start)
     sys.stdout.flush()
 
-#JointSNVMix
 class BamToDataConverter:
-    def __init__(self, normal_bam, tumor_bam, ref_genome_fasta, data_file_basename,
-                 segments, min_depth=20, min_bqual=10, min_mqual=10):
-        self.normal_bam = normal_bam
-        self.tumor_bam = tumor_bam
-        self.ref_genome_fasta = ref_genome_fasta
+    def __init__(self, normal_bam_file_name, tumor_bam_file_name,
+                 reference_genome_file_name, data_file_basename,
+                 segments, min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
+        self.normal_bam_file_name = normal_bam_file_name
+        self.tumor_bam_file_name = tumor_bam_file_name
+        self.reference_genome_file_name = reference_genome_file_name
         self.data_file_basename = data_file_basename
         
         self.segments = segments
         self.min_depth = min_depth
         self.min_bqual = min_bqual
         self.min_mqual = min_mqual
-        
-        self.buffer = 100000
+        self.process_num = process_num
         
     def convert(self):
         seg_num = self.segments.num
-        paired_counts = []
+        
+        process_num = self.process_num
+        
+        if process_num > seg_num:
+            process_num = seg_num
+        
+        pool = Pool(processes = process_num)
+        
+        args_list = []
         
         for j in range(0, seg_num):
-            print 'Preprocessing segment {0}...'.format(self.segments[j][0])
-            sys.stdout.flush()
-            
+            seg_name = self.segments[j][0]
             chrom = self.segments[j][1]
             start = self.segments[j][2]
             end = self.segments[j][3]
             
-            normal_pileup_iter = self.normal_bam.pileup(chrom, start, end)
-            tumor_pileup_iter = self.tumor_bam.pileup(chrom, start, end)
+            args_tuple = (seg_name, chrom, start, end, self.normal_bam_file_name,
+                          self.tumor_bam_file_name, self.reference_genome_file_name,
+                          self.min_depth, self.min_bqual, self.min_mqual)
             
-            paired_pileup_iter = PairedPileupIterator(normal_pileup_iter, tumor_pileup_iter, start, end)
-            paired_counts_iter = PairedCountsIterator(paired_pileup_iter, self.ref_genome_fasta, chrom,
-                                                      self.min_depth, self.min_bqual, self.min_mqual)
-            paired_counts_j = self._convert_by_segments(paired_counts_iter)
+            args_list.append(args_tuple)
             
-            paired_counts.append(paired_counts_j)
+        paired_counts = pool.map(process_by_segment, args_list)
         
         data = Data(self.segments, paired_counts)
         data.tumor_LOH_test()
         data.write_data(self.data_file_basename)
+    
+#===============================================================================
+# Function
+#===============================================================================
+def process_by_segment(args_tuple):
+    seg_name, chrom, start, end, normal_bam_file_name, tumor_bam_file_name, \
+    reference_genome_file_name, min_depth, min_bqual, min_mqual= args_tuple
+    
+    print 'Preprocessing segment {0}...'.format(seg_name)
+    sys.stdout.flush()
+
+    normal_bam = pysam.Samfile(normal_bam_file_name, 'rb')
+    tumor_bam = pysam.Samfile(tumor_bam_file_name, 'rb')
+    ref_genome_fasta = pysam.Fastafile(reference_genome_file_name)
+    
+    normal_pileup_iter = normal_bam.pileup(chrom, start, end)
+    tumor_pileup_iter = tumor_bam.pileup(chrom, start, end)
+    
+    paired_pileup_iter = PairedPileupIterator(normal_pileup_iter, tumor_pileup_iter, start, end)
+    paired_counts_iter = PairedCountsIterator(paired_pileup_iter, ref_genome_fasta, chrom,
+                                              min_depth, min_bqual, min_mqual)
+    
+    paired_counts_j = iterator_to_counts(paired_counts_iter)
+    
+    normal_bam.close()
+    tumor_bam.close()
+    ref_genome_fasta.close()
+    
+    return paired_counts_j
+
+def iterator_to_counts(paired_counts_iter):
+    buffer = 100000
+    
+    paired_counts_j = np.array([[], [], [], []], dtype=int).transpose()
+    buffer_counts = []
+    i = 0
         
-    def _convert_by_segments(self, paired_counts_iter):
-        paired_counts_j = np.array([[], [], [], []], dtype=int).transpose()
-        buffer_counts = []
-        i = 0
-        
-        for counts in paired_counts_iter:
-            buffer_counts.append(counts)
-            i = i + 1
+    for counts in paired_counts_iter:
+        buffer_counts.append(counts)
+        i = i + 1
             
-            if i < self.buffer:
-                continue
+        if i < buffer:
+            continue
             
-            buffer_counts = np.array(buffer_counts)
-            buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
-            if buffer_counts_filtered.shape[0] != 0:
-                paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
-            
-            buffer_counts = []
-            i = 0
-        
         buffer_counts = np.array(buffer_counts)
         buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
         if buffer_counts_filtered.shape[0] != 0:
             paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+            
+        buffer_counts = []
+        i = 0
         
-        return paired_counts_j
+    buffer_counts = np.array(buffer_counts)
+    buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
+    if buffer_counts_filtered.shape[0] != 0:
+        paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+        
+    return paired_counts_j
