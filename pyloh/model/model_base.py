@@ -16,7 +16,6 @@ class ProbabilisticModel(object):
         self.data = Data()
         self._init_components()
         
-    
     def read_priors(self, priors_filename):
         self.priors_parser.read_priors(priors_filename)
         self.priors = self.priors_parser.priors
@@ -27,12 +26,15 @@ class ProbabilisticModel(object):
     def preprocess_data(self):
         raise NotImplemented
         
-    def run(self, max_iters, stop_value):
-        trainer = self.model_trainer_class(self.priors, self.data, max_iters, stop_value)
+    def run(self, idx_restart, max_iters, stop_value):
+        trainer = self.model_trainer_class(self.priors, self.data, idx_restart,
+                                           max_iters, stop_value)
         
         trainer.train()
         
         self.model_parameters = trainer.model_parameters
+        
+        self.log_likelihood = trainer.log_likelihood_value
         
     def write_parameters(self, filename_base):
         self.model_parameters.write_parameters(filename_base)
@@ -42,10 +44,12 @@ class ProbabilisticModel(object):
 
 #JointSNVMix
 class ModelTrainer(object):
-    def __init__(self, priors, data, max_iters, stop_value):
+    def __init__(self, priors, data, idx_restart, max_iters, stop_value):
         self.priors = priors
         
         self.data = data
+        
+        self.idx_restart = idx_restart
         
         self.max_iters = max_iters
         
@@ -66,16 +70,16 @@ class ModelTrainer(object):
             self._M_step()
 
             parameters = self.model_parameters.parameters
-            log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
+            new_log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
             
             if self.iters > 0:
-                ll_change = (log_likelihood - old_log_likelihood) / np.abs(old_log_likelihood)
+                ll_change = (new_log_likelihood - old_log_likelihood) / np.abs(old_log_likelihood)
             else:
                 ll_change = float('inf')
             
-            self._print_running_info(self.iters, log_likelihood, old_log_likelihood, ll_change)
+            self._print_running_info(self.idx_restart, self.iters, new_log_likelihood, old_log_likelihood, ll_change)
             
-            old_log_likelihood = log_likelihood
+            old_log_likelihood = new_log_likelihood
             
             if np.abs(ll_change) < self.stop_value:
                 converged = True
@@ -85,6 +89,8 @@ class ModelTrainer(object):
                 converged = True
             
             self.iters += 1
+        
+        self.log_likelihood_value = new_log_likelihood
 
     def _E_step(self):
         self.latent_variables.update(self.model_parameters.parameters, self.iters)
@@ -106,9 +112,10 @@ class LatentVariables(object):
         raise NotImplemented
 
 class ModelParameters(object):
-    def __init__(self, priors, data):
+    def __init__(self, priors, data, idx_restart):
         self.priors = priors
         self.data = data
+        self.idx_restart = idx_restart
         
         self._init_parameters()
     

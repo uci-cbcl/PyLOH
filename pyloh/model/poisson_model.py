@@ -21,22 +21,23 @@ class PoissonProbabilisticModel(ProbabilisticModel):
         self.model_trainer_class = PoissonModelTrainer
         
 class PoissonModelTrainer(ModelTrainer):
-    def __init__(self, priors, data, max_iters, stop_value):
-        ModelTrainer.__init__(self, priors, data, max_iters, stop_value)
+    def __init__(self, priors, data, idx_restart, max_iters, stop_value):
+        ModelTrainer.__init__(self, priors, data, idx_restart, max_iters, stop_value)
         
     def _init_components(self):
         self.latent_variables = PoissonLatentVariables(self.data)
         
-        self.model_parameters = PoissonModelParameters(self.priors, self.data)
+        self.model_parameters = PoissonModelParameters(self.priors, self.data, self.idx_restart)
         
         self.log_likelihood = PoissonLogLikelihood(self.data)
     
-    def _print_running_info(self, iters, log_likelihood, old_log_likelihood, ll_change):
+    def _print_running_info(self, idx_restart, iters, new_log_likelihood, old_log_likelihood, ll_change):
         print "#" * 100
         print "# Running Info."
         print "#" * 100
+        print "Round of restarts : ", idx_restart + 1
         print "Number of iterations : ", iters
-        print "New log-likelihood : ", log_likelihood
+        print "New log-likelihood : ", new_log_likelihood
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
     
@@ -67,6 +68,11 @@ class PoissonLatentVariables(LatentVariables):
         sufficient_statistics['w'] = np.zeros((J, G))
         
         for j in range(0, J):
+            LOH_status_j = self.data.segments[j][7]
+            
+            if LOH_status_j == 'NONE':
+                continue
+            
             psi_j, u_j, v_j, w_j = self._sufficient_statistics_by_segment(parameters, eta, j)
             sufficient_statistics['psi'][j, :] = psi_j
             sufficient_statistics['u'][j, :] = u_j
@@ -104,8 +110,8 @@ class PoissonLatentVariables(LatentVariables):
         return psi_j, u_j, v_j, w_j
 
 class PoissonModelParameters(ModelParameters):
-    def __init__(self, priors, data):
-        ModelParameters.__init__(self, priors, data)
+    def __init__(self, priors, data, idx_restart):
+        ModelParameters.__init__(self, priors, data, idx_restart)
     
     def update(self, sufficient_statistics):
         parameters = {}
@@ -135,10 +141,11 @@ class PoissonModelParameters(ModelParameters):
         J = self.data.seg_num
         G = constants.GENOTYPES_TUMOR_NUM
         I = np.array(self.data.sites_num)
+        eps = constants.EPS
         
         rho_CNV = psi
         
-        rho_LOH = u/np.dot(I.reshape(J, 1), np.ones((1, G)))
+        rho_LOH = u/np.dot((I + eps).reshape(J, 1), np.ones((1, G)))
         
         rho_priors = self._update_rho_by_priors()
         
@@ -156,6 +163,7 @@ class PoissonModelParameters(ModelParameters):
 
         J = self.data.seg_num
         G = constants.GENOTYPES_TUMOR_NUM
+        eps = constants.EPS
         
         Lambda_S = self.data.segments.Lambda_S
 
@@ -164,12 +172,16 @@ class PoissonModelParameters(ModelParameters):
         weights_CNV = np.zeros(J)
         weights_LOH = np.zeros(J)
         
-        for j in range(0, J):
+        for j in range(0, J):            
             D_N_j = self.data.segments[j][4]
             D_T_j = self.data.segments[j][5]
+            LOH_status_j = self.data.segments[j][7]
+            
+            if LOH_status_j == 'NONE':
+                continue
         
-            c_E_j = D_T_j*c_N[0]/(D_N_j*Lambda_S)
-            mu_E_j = v[j]/w[j]
+            c_E_j = D_T_j*c_N[0]/((D_N_j + eps)*Lambda_S)
+            mu_E_j = v[j]/(w[j] + eps)
             
             if c_E_j < min(c_T):
                 c_E_j = min(c_T)
@@ -195,9 +207,9 @@ class PoissonModelParameters(ModelParameters):
     def _init_parameters(self):
         parameters = {}
         
-        parameters['phi'] = constants.PHI_INIT
-        parameters['phi_CNV'] = constants.PHI_INIT
-        parameters['phi_LOH'] = constants.PHI_INIT
+        parameters['phi'] = constants.PHI_INIT[self.idx_restart]
+        parameters['phi_CNV'] = constants.PHI_INIT[self.idx_restart]
+        parameters['phi_LOH'] = constants.PHI_INIT[self.idx_restart]
         parameters['rho'] = self._update_rho_by_priors()
         parameters['rho_CNV'] = parameters['rho']
         parameters['rho_LOH'] = parameters['rho']
@@ -269,6 +281,11 @@ class PoissonLogLikelihood(LogLikelihood):
         log_likelihood = 0
         
         for j in range(0, J):
+            LOH_status_j = self.data.segments[j][7]
+            
+            if LOH_status_j == 'NONE':
+                continue
+            
             log_likelihood_j = self._get_log_likelihood_by_segment(parameters, j)
             log_likelihood += log_likelihood_j
             
