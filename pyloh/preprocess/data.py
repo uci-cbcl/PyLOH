@@ -189,6 +189,9 @@ class Segments:
         
         if reads_depth_ratio.shape[0] != 0:
             self.Lambda_S = reads_depth_ratio.mean()
+        else:
+            print 'Error: No diploid segments found, existing...'
+            sys.exit(1)
         
     def read_segfile(self, inseg_file_name):
         infile = open(inseg_file_name)
@@ -250,9 +253,34 @@ class BAFHeatMap:
             self.seg_num = len(BAF_counts)
     
     def write_heatmap(self, filename_base):
-        outheatmap_file_name = filename_base + '.PyLOH.heatmap_pkl'
+        outheatmap_file_name = filename_base + '.PyLOH.heatmap.pkl'
         outfile = open(outheatmap_file_name, 'wb')
         
         pickle.dump(self.BAF_counts, outfile)
         
         outfile.close()
+        
+    def read_heatmap(self, filename_base):
+        inheatmap_file_name = filename_base + '.PyLOH.heatmap.pkl'
+        infile = open(inheatmap_file_name, 'rb')
+        
+        self.BAF_counts = pickle.load(infile)
+        self.seg_num = len(self.BAF_counts)
+        
+        infile.close()
+        
+    def get_color_max(self):
+        BAF_counts_min = constants.BAF_COUNTS_MIN
+        BAF_counts_max = constants.BAF_COUNTS_MAX
+        
+        color_max = 0
+        for j in range(0, self.seg_num):
+            BAF_counts_j_sub = self.BAF_counts[j][BAF_counts_min:BAF_counts_max, BAF_counts_min:BAF_counts_max]
+            color_max_j = BAF_counts_j_sub.max()
+            color_max = max(color_max, color_max_j)
+            
+        self.color_max = color_max
+        
+        
+        
+        

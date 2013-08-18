@@ -10,6 +10,7 @@ import argparse
 
 from pyloh.preprocess.run_preprocess import run_preprocess
 from pyloh.model.run_model import run_model
+from pyloh.postprocess.plot import plot_BAF_heatmap
 
 
 parser = argparse.ArgumentParser(prog='PyLOH')
@@ -59,7 +60,7 @@ parser_run_model = subparsers.add_parser('run_model',
                                       file and segments file that have been created.''')
 
 parser_run_model.add_argument('data_file_basename',
-                            help='Base name of preprocessed counts and segments files created.')
+                            help='Base name of preprocessed files created.')
 
 parser_run_model.add_argument('priors_file_name',
                              help='File containing prior distribution to use for training.')
@@ -73,7 +74,16 @@ parser_run_model.add_argument('--stop_value', default=1e-10, type=float,
 
 parser_run_model.set_defaults(func=run_model)
 
+#===============================================================================
+# Add BAF_heatmap sub-command
+#===============================================================================
+parser_BAF_heatmap = subparsers.add_parser('BAF_heatmap',
+                                      help='''Plot the BAF heat map for each segment.''')
 
+parser_BAF_heatmap.add_argument('data_file_basename',
+                            help='Base name of preprocessed files created.')
+
+parser_BAF_heatmap.set_defaults(func=plot_BAF_heatmap)
 
 #===============================================================================
 # Run
