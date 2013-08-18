@@ -11,7 +11,7 @@ import numpy as np
 import pysam
 
 from pyloh import constants
-from pyloh.preprocess.data import Data, Segments
+from pyloh.preprocess.data import Data, Segments, BAFHeatMap
 from pyloh.preprocess.io import PairedCountsIterator, PairedPileupIterator
 from pyloh.preprocess.utils import *
 
@@ -93,7 +93,18 @@ class BamToDataConverter:
             
             args_list.append(args_tuple)
             
-        paired_counts = pool.map(process_by_segment, args_list)
+        counts_tuple_list = pool.map(process_by_segment, args_list)
+        
+        paired_counts = []
+        BAF_counts = []
+        
+        for counts_tuple_j in counts_tuple_list:
+            paired_counts_j, BAF_counts_j = counts_tuple_j
+            paired_counts.append(paired_counts_j)
+            BAF_counts.append(BAF_counts_j)
+        
+        BAF_heatmap = BAFHeatMap(BAF_counts)
+        BAF_heatmap.write_heatmap(self.data_file_basename)
         
         data = Data(self.segments, paired_counts)
         data.tumor_LOH_test()
@@ -120,18 +131,20 @@ def process_by_segment(args_tuple):
     paired_counts_iter = PairedCountsIterator(paired_pileup_iter, ref_genome_fasta, chrom,
                                               min_depth, min_bqual, min_mqual)
     
-    paired_counts_j = iterator_to_counts(paired_counts_iter)
+    paired_counts_j, BAF_counts_j = iterator_to_counts(paired_counts_iter)
+    counts_tuple_j = (paired_counts_j, BAF_counts_j)
     
     normal_bam.close()
     tumor_bam.close()
     ref_genome_fasta.close()
     
-    return paired_counts_j
+    return counts_tuple_j
 
 def iterator_to_counts(paired_counts_iter):
     buffer = 100000
     
     paired_counts_j = np.array([[], [], [], []], dtype=int).transpose()
+    BAF_counts_j = np.zeros((100, 100))
     buffer_counts = []
     i = 0
         
@@ -143,7 +156,13 @@ def iterator_to_counts(paired_counts_iter):
             continue
             
         buffer_counts = np.array(buffer_counts)
+        
+        if buffer_counts.shape[0] != 0 :
+            BAF_counts_buffer = get_BAF_counts(buffer_counts)
+            BAF_counts_j += BAF_counts_buffer
+        
         buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
+        
         if buffer_counts_filtered.shape[0] != 0:
             paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
             
@@ -151,8 +170,14 @@ def iterator_to_counts(paired_counts_iter):
         i = 0
         
     buffer_counts = np.array(buffer_counts)
+    
+    if buffer_counts.shape[0] != 0 :
+        BAF_counts_buffer = get_BAF_counts(buffer_counts)
+        BAF_counts_j += BAF_counts_buffer
+    
     buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
+    
     if buffer_counts_filtered.shape[0] != 0:
         paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
         
-    return paired_counts_j
+    return (paired_counts_j, BAF_counts_j)

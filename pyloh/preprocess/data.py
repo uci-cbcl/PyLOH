@@ -4,6 +4,7 @@ Created on 2013-08-13
 @author: Yi Li
 '''
 import sys
+import pickle
 import numpy as np
 
 from pyloh import constants
@@ -238,3 +239,20 @@ class Segments:
         
     def _get_segment_name(self, chrom, start, end):
         return '_'.join([chrom, 'start', str(start), 'end', str(end)])
+    
+class BAFHeatMap:
+    def __init__(self, BAF_counts=None):
+        self.BAF_counts = []
+        self.seg_num = 0
+        
+        if BAF_counts != None:
+            self.BAF_counts = BAF_counts
+            self.seg_num = len(BAF_counts)
+    
+    def write_heatmap(self, filename_base):
+        outheatmap_file_name = filename_base + '.PyLOH.heatmap_pkl'
+        outfile = open(outheatmap_file_name, 'wb')
+        
+        pickle.dump(self.BAF_counts, outfile)
+        
+        outfile.close()

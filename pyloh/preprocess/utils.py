@@ -48,6 +48,21 @@ def normal_heterozygous_filter(counts):
     
     return counts
 
+def get_BAF_counts(counts):
+    BAF_bins = constants.BAF_BINS
+    
+    a_N = counts[:, 0]*1.0
+    b_N = counts[:, 1]*1.0
+    a_T = counts[:, 2]*1.0
+    b_T = counts[:, 3]*1.0
+    
+    BAF_N = b_N/(a_N + b_N)
+    BAF_T = b_T/(a_T + b_T)
+    
+    BAF_counts, _, _ = np.histogram2d(BAF_N, BAF_T, bins=(BAF_bins, BAF_bins))
+    
+    return BAF_counts
+
 def tumor_LOH_test(counts):
     BAF_T_MAX = constants.BAF_T_MAX
     BAF_T_MIN = constants.BAF_T_MIN
