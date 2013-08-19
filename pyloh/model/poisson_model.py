@@ -13,7 +13,15 @@ from pyloh.model.utils import *
 class PoissonProbabilisticModel(ProbabilisticModel):
     def __init__(self):
         ProbabilisticModel.__init__(self)
-        
+
+    def read_priors(self, priors_filename):
+        if priors_filename != None:
+            self.priors_parser.read_priors(priors_filename)
+            self.priors = self.priors_parser.priors
+        else:
+            self.priors = {}
+            self.priors['omega'] = np.array(constants.OMEGA)*1.0
+
     def preprocess_data(self):
         self.data.segments.compute_Lambda_S()
         

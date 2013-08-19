@@ -17,8 +17,7 @@ class ProbabilisticModel(object):
         self._init_components()
         
     def read_priors(self, priors_filename):
-        self.priors_parser.read_priors(priors_filename)
-        self.priors = self.priors_parser.priors
+        raise NotImplemented
     
     def read_data(self, filename_base):
         self.data.read_data(filename_base)

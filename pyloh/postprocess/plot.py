@@ -27,13 +27,17 @@ def plot_BAF_heatmap(args):
         os.mkdir(outheatmap_dir_name)
     
     for j in range(0, seg_num):
-        plot_BAF_heatmap_by_segment(BAF_heatmap, segments, outheatmap_dir_name, j)
+        BAF_counts_j = BAF_heatmap.BAF_counts[j]
+        seg_name_j = segments[j][0]
+        plot_BAF_heatmap_by_segment(BAF_counts_j, seg_name_j, outheatmap_dir_name)
 
 
-def plot_BAF_heatmap_by_segment(BAF_heatmap, segments, outheatmap_dir_name, seg_idx):
-    color_max = BAF_heatmap.color_max
-    seg_name = segments[seg_idx][0]
-    BAF_counts = BAF_heatmap.BAF_counts[seg_idx]
+def plot_BAF_heatmap_by_segment(BAF_counts, seg_name, outheatmap_dir_name):
+    BAF_counts_min = constants.BAF_COUNTS_MIN
+    BAF_counts_max = constants.BAF_COUNTS_MAX
+    
+    BAF_counts_sub = BAF_counts[BAF_counts_min:BAF_counts_max, BAF_counts_min:BAF_counts_max]
+    color_max = BAF_counts_sub.max()
     
     pyplot.figure(figsize=(8,8))
     pyplot.xlim((0, 100))

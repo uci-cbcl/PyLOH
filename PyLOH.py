@@ -20,7 +20,7 @@ subparsers = parser.add_subparsers()
 # Add preprocess sub-command
 #===============================================================================
 parser_preprocess = subparsers.add_parser('preprocess',
-                                    help='Preprocess paired normal and tumor BAM files')
+                                    help='''Preprocess paired normal and tumor BAM files''')
 
 parser_preprocess.add_argument('reference_genome_file_name',
                           help='''Reference genome fasta file.''')
@@ -32,14 +32,15 @@ parser_preprocess.add_argument('tumor_bam_file_name',
                           help='''Tumor BAM file.''')
 
 parser_preprocess.add_argument('data_file_basename',
-                          help='Base name of preprocessed files to be created.')
+                          help='''Base name of preprocessed files to be created.''')
 
 parser_preprocess.add_argument('--segments_bed_file_name', default=None, type=str,
-                          help='''Bed file for segments. If not provided, use autosomes as segments. Default is None.''')
+                          help='''Bed file for segments. If not provided,
+                            use autosomes as segments. Default is None.''')
 
 parser_preprocess.add_argument('--min_depth', default=20, type=int,
-                          help='''Minimum depth of coverage in both tumor and normal sample required to use a site in
-                          the analysis. Default is 20.''')
+                          help='''Minimum depth of coverage in both tumor and normal
+                          sample required to use a site in the analysis. Default is 20.''')
 
 parser_preprocess.add_argument('--min_base_qual', default=10, type=int,
                           help='''Remove bases with base quality lower than this. Default is 10.''')
@@ -62,8 +63,9 @@ parser_run_model = subparsers.add_parser('run_model',
 parser_run_model.add_argument('data_file_basename',
                             help='Base name of preprocessed files created.')
 
-parser_run_model.add_argument('priors_file_name',
-                             help='File containing prior distribution to use for training.')
+parser_run_model.add_argument('--priors_file_name', default=None, type=str,
+                             help='''File containing prior distribution to use for training. If not provided,
+                                use uniform prior. Default is None.''')
 
 parser_run_model.add_argument('--max_iters', default=100, type=int,
                           help='''Maximum number of iterations to used for training model. Default 100''')
@@ -78,10 +80,11 @@ parser_run_model.set_defaults(func=run_model)
 # Add BAF_heatmap sub-command
 #===============================================================================
 parser_BAF_heatmap = subparsers.add_parser('BAF_heatmap',
-                                      help='''Plot the BAF heat map for each segment.''')
+                                      help='''Plot the BAF heat map for each segment. Requires preprocessed
+                                      heatmap file that have been created.''')
 
 parser_BAF_heatmap.add_argument('data_file_basename',
-                            help='Base name of preprocessed files created.')
+                            help='''Base name of preprocessed files created.''')
 
 parser_BAF_heatmap.set_defaults(func=plot_BAF_heatmap)
 
