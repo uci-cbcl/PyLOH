@@ -9,7 +9,7 @@
 import argparse
 
 from pyloh.preprocess.run_preprocess import run_preprocess
-from pyloh.model.run_model import run_model
+from pyloh.model.run_model import run_poisson_model
 from pyloh.postprocess.plot import plot_BAF_heatmap
 
 
@@ -74,7 +74,7 @@ parser_run_model.add_argument('--stop_value', default=1e-10, type=float,
                           help='''Stop value for EM training. Once the change in log-likelihood function is below
                           this value training will end. Defaul 1e-10''')
 
-parser_run_model.set_defaults(func=run_model)
+parser_run_model.set_defaults(func=run_poisson_model)
 
 #===============================================================================
 # Add BAF_heatmap sub-command

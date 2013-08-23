@@ -25,9 +25,9 @@ class ProbabilisticModel(object):
     def preprocess_data(self):
         raise NotImplemented
         
-    def run(self, idx_restart, max_iters, stop_value):
+    def run(self, idx_restart, restart_parameters, max_iters, stop_value):
         trainer = self.model_trainer_class(self.priors, self.data, idx_restart,
-                                           max_iters, stop_value)
+                                    restart_parameters, max_iters, stop_value)
         
         trainer.train()
         
@@ -43,12 +43,14 @@ class ProbabilisticModel(object):
 
 #JointSNVMix
 class ModelTrainer(object):
-    def __init__(self, priors, data, idx_restart, max_iters, stop_value):
+    def __init__(self, priors, data, idx_restart, restart_parameters, max_iters, stop_value):
         self.priors = priors
         
         self.data = data
         
         self.idx_restart = idx_restart
+        
+        self.restart_parameters = restart_parameters
         
         self.max_iters = max_iters
         
@@ -76,7 +78,7 @@ class ModelTrainer(object):
             else:
                 ll_change = float('inf')
             
-            self._print_running_info(self.idx_restart, self.iters, new_log_likelihood, old_log_likelihood, ll_change)
+            self._print_running_info(self.idx_restart, self.restart_parameters, self.iters, new_log_likelihood, old_log_likelihood, ll_change)
             
             old_log_likelihood = new_log_likelihood
             
@@ -97,24 +99,25 @@ class ModelTrainer(object):
     def _M_step(self):
         self.model_parameters.update(self.latent_variables.sufficient_statistics)
 
-    def _print_running_info(self, iters, log_likelihood, old_log_likelihood, ll_change):
+    def _print_running_info(self, idx_restart, restart_parameters, iters, new_log_likelihood, old_log_likelihood, ll_change):
         raise NotImplemented  
 
     def _init_components(self):
         raise NotImplemented
 
 class LatentVariables(object): 
-    def __init__(self, data):       
+    def __init__(self, data, restart_parameters):       
         self.data = data
+        self.restart_parameters = restart_parameters
 
     def update(self, parameters):
         raise NotImplemented
 
 class ModelParameters(object):
-    def __init__(self, priors, data, idx_restart):
+    def __init__(self, priors, data, restart_parameters):
         self.priors = priors
         self.data = data
-        self.idx_restart = idx_restart
+        self.restart_parameters = restart_parameters
         
         self._init_parameters()
     
@@ -128,8 +131,9 @@ class ModelParameters(object):
         raise NotImplemented
     
 class LogLikelihood(object):
-    def __init__(self, data):
+    def __init__(self, data, restart_parameters):
         self.data = data
+        self.restart_parameters = restart_parameters
         
     def get_log_likelihood(self, parameters):
         raise NotImplemented
