@@ -33,7 +33,7 @@ class ProbabilisticModel(object):
         
         self.model_parameters = trainer.model_parameters
         
-        self.log_likelihood = trainer.log_likelihood_value
+        self.log_likelihood = trainer.log_likelihood
         
     def write_parameters(self, filename_base):
         self.model_parameters.write_parameters(filename_base)
@@ -64,14 +64,14 @@ class ModelTrainer(object):
         converged = False
         
         parameters = self.model_parameters.parameters
-        old_log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
+        old_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
   
         while converged == False:
             self._E_step()
             self._M_step()
 
             parameters = self.model_parameters.parameters
-            new_log_likelihood = self.log_likelihood.get_log_likelihood(parameters)
+            new_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
             
             if self.iters > 0:
                 ll_change = (new_log_likelihood - old_log_likelihood) / np.abs(old_log_likelihood)
@@ -91,7 +91,7 @@ class ModelTrainer(object):
             
             self.iters += 1
         
-        self.log_likelihood_value = new_log_likelihood
+        self.log_likelihood = new_log_likelihood
 
     def _E_step(self):
         self.latent_variables.update(self.model_parameters.parameters, self.iters)
@@ -130,7 +130,7 @@ class ModelParameters(object):
     def _init_parameters(self):
         raise NotImplemented
     
-class LogLikelihood(object):
+class ModelLikelihood(object):
     def __init__(self, data, restart_parameters):
         self.data = data
         self.restart_parameters = restart_parameters

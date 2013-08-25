@@ -67,12 +67,12 @@ parser_run_model.add_argument('--priors_file_name', default=None, type=str,
                              help='''File containing prior distribution to use for training. If not provided,
                                 use uniform prior. Default is None.''')
 
-parser_run_model.add_argument('--max_iters', default=100, type=int,
-                          help='''Maximum number of iterations to used for training model. Default 100''')
+parser_run_model.add_argument('--max_iters', default=40, type=int,
+                          help='''Maximum number of iterations to used for training model. Default is 40.''')
 
-parser_run_model.add_argument('--stop_value', default=1e-10, type=float,
+parser_run_model.add_argument('--stop_value', default=1e-7, type=float,
                           help='''Stop value for EM training. Once the change in log-likelihood function is below
-                          this value training will end. Defaul 1e-10''')
+                          this value training will end. Default is 1e-7.''')
 
 parser_run_model.set_defaults(func=run_poisson_model)
 

@@ -37,7 +37,7 @@ class PoissonModelTrainer(ModelTrainer):
         
         self.model_parameters = PoissonModelParameters(self.priors, self.data, self.restart_parameters)
         
-        self.log_likelihood = PoissonLogLikelihood(self.data, self.restart_parameters)
+        self.model_likelihood = PoissonModelLikelihood(self.data, self.restart_parameters)
     
     def _print_running_info(self, idx_restart, restart_parameters, iters, new_log_likelihood, old_log_likelihood, ll_change):
         c_S, phi_init = restart_parameters
@@ -94,7 +94,6 @@ class PoissonLatentVariables(LatentVariables):
     
     def _sufficient_statistics_by_segment(self, parameters, eta, j):
         G = constants.GENOTYPES_TUMOR_NUM
-        c_S, __ = self.restart_parameters
         
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
@@ -105,6 +104,7 @@ class PoissonLatentVariables(LatentVariables):
         rho_j = parameters['rho'][j]
         phi = parameters['phi']
         
+        c_S, __ = self.restart_parameters
         Lambda_S = self.data.segments.Lambda_S
         
         log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
@@ -176,29 +176,21 @@ class PoissonModelParameters(ModelParameters):
         J = self.data.seg_num
         G = constants.GENOTYPES_TUMOR_NUM
         eps = constants.EPS
-        
-        #Lambda_S = self.data.segments.Lambda_S
 
         phi_CNV = np.zeros(J)
         phi_LOH = np.zeros(J)
         weights_CNV = np.zeros(J)
         weights_LOH = np.zeros(J)
         
-        for j in range(0, J):            
-            D_N_j = self.data.segments[j][4]
-            D_T_j = self.data.segments[j][5]
+        for j in range(0, J):
             LOH_status_j = self.data.segments[j][7]
             
             if LOH_status_j == 'NONE':
                 continue
-        
-            #c_E_j = D_T_j*c_N[0]/((D_N_j + eps)*Lambda_S)
+
+            D_N_j = self.data.segments[j][4]
+            D_T_j = self.data.segments[j][5]
             mu_E_j = v[j]/(w[j] + eps)
-            
-            #if c_E_j < min(c_T):
-            #    c_E_j = min(c_T)
-            #elif c_E_j > max(c_T):
-            #    c_E_j = max(c_T)
             
             for g in range(0, G):
                 if mu_E_j[g] < min(mu_T):
@@ -288,9 +280,9 @@ class PoissonModelParameters(ModelParameters):
                 
         return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
 
-class PoissonLogLikelihood(LogLikelihood):
+class PoissonModelLikelihood(ModelLikelihood):
     def __init__(self, data, restart_parameters):
-        LogLikelihood.__init__(self, data, restart_parameters)
+        ModelLikelihood.__init__(self, data, restart_parameters)
     
     def get_log_likelihood(self, parameters):
         J = self.data.seg_num
