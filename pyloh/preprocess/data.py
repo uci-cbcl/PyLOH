@@ -95,6 +95,7 @@ class Segments:
         self.tumor_reads_num = []
         self.LOH_frec = []
         self.LOH_status = []
+        self.log2_ratio = []
         
     def segmentation_by_chrom(self, normal_bam, tumor_bam):
         chrom_list = constants.CHROM_LIST
@@ -115,6 +116,7 @@ class Segments:
             self.ends.append(chrom_lens[i])
             self.normal_reads_num.append(normal_reads_num)
             self.tumor_reads_num.append(tumor_reads_num)
+            self.log2_ratio.append(np.log2(1.0*tumor_reads_num/normal_reads_num))
         
         self.num = chrom_num
         self._init_LOH_status()
@@ -153,6 +155,7 @@ class Segments:
             self.ends.append(bed_ends[i])
             self.normal_reads_num.append(normal_reads_num)
             self.tumor_reads_num.append(tumor_reads_num)
+            self.log2_ratio.append(np.log2(1.0*tumor_reads_num/normal_reads_num))
             self.num = self.num + 1
             
         self._init_LOH_status()
@@ -205,6 +208,7 @@ class Segments:
             start, end, normal_reads_num, tumor_reads_num = map(int, fields[2:6])
             LOH_frec = float(fields[6])
             LOH_status = fields[7]
+            log2_ratio = float(fields[8])
             
             self.names.append(seg_name)
             self.chroms.append(chrom)
@@ -214,6 +218,7 @@ class Segments:
             self.tumor_reads_num.append(tumor_reads_num)
             self.LOH_frec.append(LOH_frec)
             self.LOH_status.append(LOH_status)
+            self.log2_ratio.append(log2_ratio)
             
             self.num = self.num + 1
         
@@ -223,7 +228,7 @@ class Segments:
         outfile = open(outseg_file_name, 'w')
         
         outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num',
-                                 'tumor_reads_num', 'LOH_frec', 'LOH_status']) + '\n')
+                                 'tumor_reads_num', 'LOH_frec', 'LOH_status', 'log2_ratio']) + '\n')
         
         for j in range(0, self.num):
             outfile.write('\t'.join(map(str, self[j])) + '\n')
@@ -235,10 +240,10 @@ class Segments:
         self.LOH_status = ['NONE' for j in range(0, self.num)]
     
     def __getitem__(self, i):
-        "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_status"
+        "seg_name, chrom, start, end, normal_reads_num, tumor_reads_num, LOH_frec, LOH_status, log2_ratio"
         return (self.names[i], self.chroms[i], self.starts[i], self.ends[i],
                 self.normal_reads_num[i], self.tumor_reads_num[i],
-                self.LOH_frec[i], self.LOH_status[i])
+                self.LOH_frec[i], self.LOH_status[i], self.log2_ratio[i])
         
     def _get_segment_name(self, chrom, start, end):
         return '_'.join([chrom, 'start', str(start), 'end', str(end)])
