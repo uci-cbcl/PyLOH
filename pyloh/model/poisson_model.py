@@ -53,9 +53,9 @@ class PoissonModelTrainer(ModelTrainer):
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
         print "Parameters :"
-        print "Tumor celluar frequency by CNV: {0}".format(self.model_parameters.parameters['phi_CNV'])
-        print "Tumor celluar frequency by LOH: {0}".format(self.model_parameters.parameters['phi_LOH'])
-        print "Tumor celluar frequency combined: {0}".format(self.model_parameters.parameters['phi']) 
+        print "Tumor cellular frequency by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
+        print "Tumor cellular frequency by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
+        print "Tumor cellular frequency combined : {0:.3f}".format(self.model_parameters.parameters['phi']) 
         
 class PoissonLatentVariables(LatentVariables):
     def __init__(self, data, restart_parameters):
@@ -126,6 +126,8 @@ class PoissonModelParameters(ModelParameters):
         ModelParameters.__init__(self, priors, data, restart_parameters)
     
     def update(self, sufficient_statistics):
+        self.sufficient_statistics = sufficient_statistics
+        
         parameters = {}
                 
         psi = sufficient_statistics['psi']
@@ -279,6 +281,87 @@ class PoissonModelParameters(ModelParameters):
         phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
                 
         return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
+    
+    def write_parameters(self, filename_base):
+        outpurity_file_name = filename_base + '.PyLOH.purity'
+        outseg_ext_file_name = filename_base + '.PyLOH.segments.extended'
+        
+        self._write_purity(outpurity_file_name)
+        self._write_seg_extended(outseg_ext_file_name)
+        
+    def _write_purity(self, outpurity_file_name):
+        outfile = open(outpurity_file_name, 'w')
+        
+        c_S, __ = self.restart_parameters
+        
+        outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
+        outfile.write("Tumor cellular frequency by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
+        outfile.write("Tumor cellular frequency by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
+        outfile.write("Tumor cellular frequency combined : {0:.3f}".format(self.parameters['phi']) + '\n')
+        
+        outfile.close()
+        
+    def _write_seg_extended(self, outseg_ext_file_name):
+        outfile = open(outseg_ext_file_name, 'w')
+
+        outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num',
+                                 'tumor_reads_num', 'LOH_frec', 'LOH_status', 'log2_ratio',
+                                 'allele_type', 'copy_number']) + '\n')
+
+        J = self.data.seg_num
+        
+        for j in range(0, J):
+            LOH_status_j = self.data.segments[j][7]
+            
+            if LOH_status_j == 'NONE':
+                allele_type_j = 'NONE'
+                copy_number_j = 'NONE'
+            else:
+                allele_type_j = self._get_allele_type_by_segment(j)
+                copy_number_j = self._get_copy_number_by_segment(j)
+                
+            segment_j = list(self.data.segments[j])
+            segment_j.extend([allele_type_j, copy_number_j])
+            
+            outfile.write('\t'.join(map(str, segment_j)) + '\n')
+        
+        outfile.close()
+        
+    def _get_allele_type_by_segment(self, j):
+        allele_types_tumor = constants.ALLELETYPES_TUMOR
+        G = constants.GENOTYPES_TUMOR_NUM
+        
+        psi_j = self.sufficient_statistics['psi'][j]
+        allele_types_prob = {}
+        
+        for g in range(0, G):
+            allele_type = allele_types_tumor[g]
+            if allele_type not in allele_types_prob.keys():
+                allele_types_prob[allele_type] = psi_j[g]
+            else:
+                allele_types_prob[allele_type] += psi_j[g]
+        
+        allele_type_max = max(allele_types_prob, key=allele_types_prob.get)
+        
+        return allele_type_max
+
+    def _get_copy_number_by_segment(self, j):
+        copy_number_tumor = constants.COPY_NUMBER_TUMOR
+        G = constants.GENOTYPES_TUMOR_NUM
+        
+        psi_j = self.sufficient_statistics['psi'][j]
+        copy_number_prob = {}
+        
+        for g in range(0, G):
+            copy_number = copy_number_tumor[g]
+            if copy_number not in copy_number_prob.keys():
+                copy_number_prob[copy_number] = psi_j[g]
+            else:
+                copy_number_prob[copy_number] += psi_j[g]
+        
+        copy_number_max = max(copy_number_prob, key=copy_number_prob.get)
+        
+        return copy_number_max
 
 class PoissonModelLikelihood(ModelLikelihood):
     def __init__(self, data, restart_parameters):

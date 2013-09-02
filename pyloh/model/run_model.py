@@ -33,13 +33,14 @@ def run_poisson_model(args):
     model_parameters_optimum = model_parameters_list[idx_restart_optimum]
     restart_parameters_optimum = restart_parameters_list[idx_restart_optimum]
     c_S_optimum, __ = restart_parameters_optimum
+    model_parameters_optimum.write_parameters(args.data_file_basename)
     
     print "*" * 100
     print "* Finish."
     print "*" * 100
     print "Optimum log-likelihood : ", log_likelihood_list[idx_restart_optimum]
     print "Optimum baseline copy number : ", c_S_optimum
-    print "Tumor celluar frequency by CNV: {0}".format(model_parameters_optimum.parameters['phi_CNV'])
-    print "Tumor celluar frequency by LOH: {0}".format(model_parameters_optimum.parameters['phi_LOH'])
-    print "Tumor celluar frequency combined: {0}".format(model_parameters_optimum.parameters['phi']) 
+    print "Tumor cellular frequency by CNV : {0:.3f}".format(model_parameters_optimum.parameters['phi_CNV'])
+    print "Tumor cellular frequency by LOH : {0:.3f}".format(model_parameters_optimum.parameters['phi_LOH'])
+    print "Tumor cellular frequency combined : {0:.3f}".format(model_parameters_optimum.parameters['phi']) 
     

@@ -124,7 +124,7 @@ class ModelParameters(object):
     def update(self, sufficient_statistics):
         raise NotImplemented
     
-    def write_parameters(filename_base):
+    def write_parameters(self, filename_base):
         raise NotImplemented
 
     def _init_parameters(self):
