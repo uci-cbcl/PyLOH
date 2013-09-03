@@ -40,7 +40,8 @@ class PoissonModelTrainer(ModelTrainer):
         self.model_likelihood = PoissonModelLikelihood(self.data, self.restart_parameters)
     
     def _print_running_info(self, idx_restart, restart_parameters, iters, new_log_likelihood, old_log_likelihood, ll_change):
-        c_S, phi_init = restart_parameters
+        c_S = restart_parameters['copy_number_base']
+        phi_init = restart_parameters['phi_init']
         
         print "#" * 100
         print "# Running Info."
@@ -104,7 +105,7 @@ class PoissonLatentVariables(LatentVariables):
         rho_j = parameters['rho'][j]
         phi = parameters['phi']
         
-        c_S, __ = self.restart_parameters
+        c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
         
         log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
@@ -213,7 +214,7 @@ class PoissonModelParameters(ModelParameters):
     def _init_parameters(self):
         parameters = {}
         
-        __, phi_init = self.restart_parameters
+        phi_init = self.restart_parameters['phi_init']
         
         parameters['phi'] = phi_init
         parameters['phi_CNV'] = phi_init
@@ -246,7 +247,7 @@ class PoissonModelParameters(ModelParameters):
         
         G = constants.GENOTYPES_TUMOR_NUM
         
-        c_S, __ = self.restart_parameters
+        c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
         
         phi_CNV_j = 0
@@ -292,7 +293,7 @@ class PoissonModelParameters(ModelParameters):
     def _write_purity(self, outpurity_file_name):
         outfile = open(outpurity_file_name, 'w')
         
-        c_S, __ = self.restart_parameters
+        c_S = self.restart_parameters['copy_number_base']
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
         outfile.write("Tumor cellular frequency by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
@@ -396,7 +397,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         phi = parameters['phi']
         
         Lambda_S = self.data.segments.Lambda_S
-        c_S, __ = self.restart_parameters
+        c_S = self.restart_parameters['copy_number_base']
         
         log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
         log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi)
@@ -445,7 +446,9 @@ def poisson_restart_parameters_list():
     
     for c_S in constants.COPY_NUMBER_BASE:
         for phi_init in constants.PHI_INIT:
-            restart_parameters = (c_S, phi_init)
+            restart_parameters = {}
+            restart_parameters['copy_number_base'] = c_S
+            restart_parameters['phi_init'] = phi_init
             restart_parameters_list.append(restart_parameters)
     
     return restart_parameters_list

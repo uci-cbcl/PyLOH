@@ -31,7 +31,7 @@ parser_preprocess.add_argument('normal_bam_file_name',
 parser_preprocess.add_argument('tumor_bam_file_name',
                           help='''Tumor BAM file.''')
 
-parser_preprocess.add_argument('data_file_basename',
+parser_preprocess.add_argument('filename_base',
                           help='''Base name of preprocessed files to be created.''')
 
 parser_preprocess.add_argument('--segments_bed_file_name', default=None, type=str,
@@ -60,7 +60,7 @@ parser_run_model = subparsers.add_parser('run_model',
                                       help='''Run a Poisson model based analysis. Requires preprocessed counts
                                       file and segments file that have been created.''')
 
-parser_run_model.add_argument('data_file_basename',
+parser_run_model.add_argument('filename_base',
                             help='Base name of preprocessed files created.')
 
 parser_run_model.add_argument('--priors_file_name', default=None, type=str,
@@ -83,7 +83,7 @@ parser_BAF_heatmap = subparsers.add_parser('BAF_heatmap',
                                       help='''Plot the BAF heat map for each segment. Requires preprocessed
                                       heatmap file that have been created.''')
 
-parser_BAF_heatmap.add_argument('data_file_basename',
+parser_BAF_heatmap.add_argument('filename_base',
                             help='''Base name of preprocessed files created.''')
 
 parser_BAF_heatmap.set_defaults(func=plot_BAF_heatmap)

@@ -14,15 +14,15 @@ from pyloh.preprocess.data import Segments, BAFHeatMap
 
 def plot_BAF_heatmap(args):
     BAF_heatmap = BAFHeatMap()
-    BAF_heatmap.read_heatmap(args.data_file_basename)
+    BAF_heatmap.read_heatmap(args.filename_base)
     BAF_heatmap.get_color_max()
     
     segments = Segments()
-    inseg_file_name = args.data_file_basename + '.PyLOH.segments'
+    inseg_file_name = args.filename_base + '.PyLOH.segments'
     segments.read_segfile(inseg_file_name)
     seg_num = segments.num
     
-    outheatmap_dir_name = args.data_file_basename + '.PyLOH.heatmap.plot'
+    outheatmap_dir_name = args.filename_base + '.PyLOH.heatmap.plot'
     if os.path.exists(outheatmap_dir_name) == False:
         os.mkdir(outheatmap_dir_name)
     

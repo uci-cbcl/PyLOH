@@ -39,7 +39,7 @@ def run_preprocess(args):
                                    args.normal_bam_file_name,
                                    args.tumor_bam_file_name,
                                    args.reference_genome_file_name,
-                                   args.data_file_basename,
+                                   args.filename_base,
                                    segments,
                                    min_depth=args.min_depth,
                                    min_bqual=args.min_base_qual,
@@ -56,12 +56,12 @@ def run_preprocess(args):
 
 class BamToDataConverter:
     def __init__(self, normal_bam_file_name, tumor_bam_file_name,
-                 reference_genome_file_name, data_file_basename,
+                 reference_genome_file_name, filename_base,
                  segments, min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
         self.normal_bam_file_name = normal_bam_file_name
         self.tumor_bam_file_name = tumor_bam_file_name
         self.reference_genome_file_name = reference_genome_file_name
-        self.data_file_basename = data_file_basename
+        self.filename_base = filename_base
         
         self.segments = segments
         self.min_depth = min_depth
@@ -104,11 +104,11 @@ class BamToDataConverter:
             BAF_counts.append(BAF_counts_j)
         
         BAF_heatmap = BAFHeatMap(BAF_counts)
-        BAF_heatmap.write_heatmap(self.data_file_basename)
+        BAF_heatmap.write_heatmap(self.filename_base)
         
         data = Data(self.segments, paired_counts)
         data.tumor_LOH_test()
-        data.write_data(self.data_file_basename)
+        data.write_data(self.filename_base)
     
 #===============================================================================
 # Function

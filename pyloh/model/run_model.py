@@ -16,7 +16,7 @@ def run_poisson_model(args):
     
     model = PoissonProbabilisticModel()
     model.read_priors(args.priors_file_name)
-    model.read_data(args.data_file_basename)
+    model.read_data(args.filename_base)
     model.preprocess_data()
 
     for idx_restart in range(0, restart_num):
@@ -32,8 +32,8 @@ def run_poisson_model(args):
     
     model_parameters_optimum = model_parameters_list[idx_restart_optimum]
     restart_parameters_optimum = restart_parameters_list[idx_restart_optimum]
-    c_S_optimum, __ = restart_parameters_optimum
-    model_parameters_optimum.write_parameters(args.data_file_basename)
+    c_S_optimum = restart_parameters_optimum['copy_number_base']
+    model_parameters_optimum.write_parameters(args.filename_base)
     
     print "*" * 100
     print "* Finish."
