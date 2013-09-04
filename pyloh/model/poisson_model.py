@@ -11,45 +11,56 @@ from pyloh.model.model_base import *
 from pyloh.model.utils import *
 
 class PoissonProbabilisticModel(ProbabilisticModel):
-    def __init__(self):
-        ProbabilisticModel.__init__(self)
+    def __init__(self, allele_number_max):
+        ProbabilisticModel.__init__(self, allele_number_max)
 
     def read_priors(self, priors_filename):
         if priors_filename != None:
-            self.priors_parser.read_priors(priors_filename)
+            self.priors_parser.read_priors(priors_filename, self.allele_number_max)
             self.priors = self.priors_parser.priors
         else:
             self.priors = {}
-            self.priors['omega'] = np.array(constants.OMEGA)*1.0
+            self.priors['omega'] = np.array(get_omega(self.allele_number_max))*1.0
 
-    def preprocess_data(self):
+    def preprocess(self):
+        config_parameters = {}
+        config_parameters['allele_number_max'] = self.allele_number_max
+        config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.allele_number_max)
+        config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.allele_number_max)
+        config_parameters['alleletypes_tumor'] = get_alleletypes_tumor(self.allele_number_max)
+        config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.allele_number_max)
+        config_parameters['MU_T'] = get_MU_T(self.allele_number_max)
+        
+        self.config_parameters = config_parameters
         self.data.segments.compute_Lambda_S()
         
     def _init_components(self):
         self.model_trainer_class = PoissonModelTrainer
         
 class PoissonModelTrainer(ModelTrainer):
-    def __init__(self, priors, data, idx_restart, restart_parameters, max_iters, stop_value):
-        ModelTrainer.__init__(self, priors, data, idx_restart, restart_parameters, max_iters, stop_value)
+    def __init__(self, priors, data, idx_restart, restart_parameters, config_parameters, max_iters, stop_value):
+        ModelTrainer.__init__(self, priors, data, idx_restart, restart_parameters, config_parameters, max_iters, stop_value)
         
     def _init_components(self):
-        self.latent_variables = PoissonLatentVariables(self.data, self.restart_parameters)
+        self.latent_variables = PoissonLatentVariables(self.data, self.restart_parameters, self.config_parameters)
         
-        self.model_parameters = PoissonModelParameters(self.priors, self.data, self.restart_parameters)
+        self.model_parameters = PoissonModelParameters(self.priors, self.data, self.restart_parameters, self.config_parameters)
         
-        self.model_likelihood = PoissonModelLikelihood(self.data, self.restart_parameters)
+        self.model_likelihood = PoissonModelLikelihood(self.data, self.restart_parameters, self.config_parameters)
     
-    def _print_running_info(self, idx_restart, restart_parameters, iters, new_log_likelihood, old_log_likelihood, ll_change):
-        c_S = restart_parameters['copy_number_base']
-        phi_init = restart_parameters['phi_init']
+    def _print_running_info(self, new_log_likelihood, old_log_likelihood, ll_change):
+        c_S = self.restart_parameters['copy_number_base']
+        phi_init = self.restart_parameters['phi_init']
+        allele_number_max = self.config_parameters['allele_number_max']
         
         print "#" * 100
         print "# Running Info."
         print "#" * 100
-        print "Round of restarts : ", idx_restart + 1
+        print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
+        print "Maximum copy number of each allele : ", allele_number_max
         print "Initial tumor celluar frequency : ", phi_init
-        print "Number of iterations : ", iters
+        print "Number of iterations : ", self.iters
         print "New log-likelihood : ", new_log_likelihood
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
@@ -59,8 +70,8 @@ class PoissonModelTrainer(ModelTrainer):
         print "Tumor cellular frequency combined : {0:.3f}".format(self.model_parameters.parameters['phi']) 
         
 class PoissonLatentVariables(LatentVariables):
-    def __init__(self, data, restart_parameters):
-        LatentVariables.__init__(self, data, restart_parameters)
+    def __init__(self, data, restart_parameters, config_parameters):
+        LatentVariables.__init__(self, data, restart_parameters, config_parameters)
     
     def update(self, parameters, iters):
         eta = constants.ETA
@@ -70,7 +81,7 @@ class PoissonLatentVariables(LatentVariables):
             eta = 1
         
         J = self.data.seg_num
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         
         sufficient_statistics = {}
         
@@ -94,7 +105,7 @@ class PoissonLatentVariables(LatentVariables):
         self.sufficient_statistics = sufficient_statistics
     
     def _sufficient_statistics_by_segment(self, parameters, eta, j):
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
@@ -108,8 +119,8 @@ class PoissonLatentVariables(LatentVariables):
         c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
         
-        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
-        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi)
+        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi, self.config_parameters)
+        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi, self.config_parameters)
 
         xi_j = log_space_normalise_rows_annealing(log_likelihoods_LOH, eta)
         psi_j = log_space_normalise_rows_annealing(log_likelihoods_CNV, eta)
@@ -123,8 +134,8 @@ class PoissonLatentVariables(LatentVariables):
         return psi_j, u_j, v_j, w_j
 
 class PoissonModelParameters(ModelParameters):
-    def __init__(self, priors, data, restart_parameters):
-        ModelParameters.__init__(self, priors, data, restart_parameters)
+    def __init__(self, priors, data, restart_parameters, config_parameters):
+        ModelParameters.__init__(self, priors, data, restart_parameters, config_parameters)
     
     def update(self, sufficient_statistics):
         self.sufficient_statistics = sufficient_statistics
@@ -154,7 +165,7 @@ class PoissonModelParameters(ModelParameters):
         z1 = constants.UPDATE_WEIGHTS['z1']
         
         J = self.data.seg_num
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         I = np.array(self.data.sites_num)
         eps = constants.EPS
         
@@ -172,12 +183,12 @@ class PoissonModelParameters(ModelParameters):
         x2 = constants.UPDATE_WEIGHTS['x2']
         y2 = constants.UPDATE_WEIGHTS['y2']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
-        c_T = np.array(constants.COPY_NUMBER_TUMOR)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
         mu_N = np.array(constants.MU_N)
-        mu_T = np.array(constants.MU_T)
+        mu_T = np.array(self.config_parameters['MU_T'])
 
         J = self.data.seg_num
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         eps = constants.EPS
 
         phi_CNV = np.zeros(J)
@@ -227,7 +238,7 @@ class PoissonModelParameters(ModelParameters):
         
     def _update_rho_by_priors(self):
         J = self.data.seg_num
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         
         omega = self.priors['omega']
         
@@ -240,12 +251,12 @@ class PoissonModelParameters(ModelParameters):
     
     def _update_phi_by_segment(self, D_N_j, D_T_j, mu_E_j, rho_j, rho_CNV_j, rho_LOH_j):
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
-        c_T = np.array(constants.COPY_NUMBER_TUMOR)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
         mu_N = np.array(constants.MU_N)
-        mu_T = np.array(constants.MU_T)
+        mu_T = np.array(self.config_parameters['MU_T'])
         eps = constants.EPS
         
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         
         c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
@@ -294,8 +305,10 @@ class PoissonModelParameters(ModelParameters):
         outfile = open(outpurity_file_name, 'w')
         
         c_S = self.restart_parameters['copy_number_base']
+        allele_number_max = self.config_parameters['allele_number_max']
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
+        outfile.write("Maximum copy number of each allele : {0}".format(allele_number_max) + '\n')
         outfile.write("Tumor cellular frequency by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
         outfile.write("Tumor cellular frequency by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
         outfile.write("Tumor cellular frequency combined : {0:.3f}".format(self.parameters['phi']) + '\n')
@@ -329,8 +342,8 @@ class PoissonModelParameters(ModelParameters):
         outfile.close()
         
     def _get_allele_type_by_segment(self, j):
-        allele_types_tumor = constants.ALLELETYPES_TUMOR
-        G = constants.GENOTYPES_TUMOR_NUM
+        allele_types_tumor = self.config_parameters['alleletypes_tumor']
+        G = self.config_parameters['genotypes_tumor_num']
         
         psi_j = self.sufficient_statistics['psi'][j]
         allele_types_prob = {}
@@ -347,8 +360,8 @@ class PoissonModelParameters(ModelParameters):
         return allele_type_max
 
     def _get_copy_number_by_segment(self, j):
-        copy_number_tumor = constants.COPY_NUMBER_TUMOR
-        G = constants.GENOTYPES_TUMOR_NUM
+        copy_number_tumor = self.config_parameters['copynumber_tumor']
+        G = self.config_parameters['genotypes_tumor_num']
         
         psi_j = self.sufficient_statistics['psi'][j]
         copy_number_prob = {}
@@ -365,8 +378,8 @@ class PoissonModelParameters(ModelParameters):
         return copy_number_max
 
 class PoissonModelLikelihood(ModelLikelihood):
-    def __init__(self, data, restart_parameters):
-        ModelLikelihood.__init__(self, data, restart_parameters)
+    def __init__(self, data, restart_parameters, config_parameters):
+        ModelLikelihood.__init__(self, data, restart_parameters, config_parameters)
     
     def get_log_likelihood(self, parameters):
         J = self.data.seg_num
@@ -385,7 +398,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         return log_likelihood
     
     def _get_log_likelihood_by_segment(self, parameters, j):
-        G = constants.GENOTYPES_TUMOR_NUM
+        G = self.config_parameters['genotypes_tumor_num']
         
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
@@ -399,8 +412,8 @@ class PoissonModelLikelihood(ModelLikelihood):
         Lambda_S = self.data.segments.Lambda_S
         c_S = self.restart_parameters['copy_number_base']
         
-        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi)
-        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi)
+        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi, self.config_parameters)
+        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi, self.config_parameters)
         
         log_likelihoods_LOH = np.logaddexp.reduce(log_likelihoods_LOH, axis = 1)
         log_likelihoods_CNV = np.logaddexp.reduce(log_likelihoods_CNV, axis = 1)
@@ -414,12 +427,12 @@ class PoissonModelLikelihood(ModelLikelihood):
 # Function
 #===============================================================================
 
-def poisson_ll_func_LOH(b_T, d_T, rho, phi):
+def poisson_ll_func_LOH(b_T, d_T, rho, phi, config_parameters):
     I = d_T.shape[0]
-    mu_N = np.array(constants.MU_N)
-    mu_T = np.array(constants.MU_T)
     c_N = np.array(constants.COPY_NUMBER_NORMAL)
-    c_T = np.array(constants.COPY_NUMBER_TUMOR)
+    c_T = np.array(config_parameters['copynumber_tumor'])
+    mu_N = np.array(constants.MU_N)
+    mu_T = np.array(config_parameters['MU_T'])
     
     mu_E = get_mu_E(mu_N, mu_T, c_N, c_T, phi)
         
@@ -427,9 +440,9 @@ def poisson_ll_func_LOH(b_T, d_T, rho, phi):
     
     return log_likelihoods
     
-def poisson_ll_func_CNV(D_N, D_T, c_S, Lambda_S, rho, phi):
+def poisson_ll_func_CNV(D_N, D_T, c_S, Lambda_S, rho, phi, config_parameters):
     c_N = np.array(constants.COPY_NUMBER_NORMAL)
-    c_T = np.array(constants.COPY_NUMBER_TUMOR)
+    c_T = np.array(config_parameters['copynumber_tumor'])
     c_S = np.array(c_S)
     
     c_E_j = get_c_E(c_N, c_T, phi)

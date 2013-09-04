@@ -88,7 +88,7 @@ def get_copynumber_tumor(allele_number_max):
     
     return copynumber_tumor
 
-def get_mu_T(allele_number_max):
+def get_MU_T(allele_number_max):
     empiri_BAF = constants.EMPIRI_BAF
     empiri_AAF = constants.EMPIRI_AAF
     err = constants.ERR
