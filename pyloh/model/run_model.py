@@ -3,6 +3,8 @@ Created on 2012-08-13
 
 @author: Yi Li
 '''
+import sys
+
 import numpy as np
 
 from pyloh import constants
@@ -43,5 +45,6 @@ def run_poisson_model(args):
     print "Maximum copy number of each allele : ", args.allele_number_max
     print "Tumor cellular frequency by CNV : {0:.3f}".format(model_parameters_optimum.parameters['phi_CNV'])
     print "Tumor cellular frequency by LOH : {0:.3f}".format(model_parameters_optimum.parameters['phi_LOH'])
-    print "Tumor cellular frequency combined : {0:.3f}".format(model_parameters_optimum.parameters['phi']) 
+    print "Tumor cellular frequency combined : {0:.3f}".format(model_parameters_optimum.parameters['phi'])
+    sys.stdout.flush()
     

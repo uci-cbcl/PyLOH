@@ -3,6 +3,8 @@ Created on 2013-07-31
 
 @author: Yi Li
 '''
+import sys
+
 import numpy as np
 
 from pyloh import constants
@@ -67,7 +69,8 @@ class PoissonModelTrainer(ModelTrainer):
         print "Parameters :"
         print "Tumor cellular frequency by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
         print "Tumor cellular frequency by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
-        print "Tumor cellular frequency combined : {0:.3f}".format(self.model_parameters.parameters['phi']) 
+        print "Tumor cellular frequency combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
+        sys.stdout.flush()
         
 class PoissonLatentVariables(LatentVariables):
     def __init__(self, data, restart_parameters, config_parameters):
