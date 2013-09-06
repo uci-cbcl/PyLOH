@@ -87,10 +87,13 @@ class ModelTrainer(object):
             old_log_likelihood = new_log_likelihood
             
             if np.abs(ll_change) < self.stop_value:
+                print "Stop value of EM iterations exceeded. Exiting training..."
+                sys.stdout.flush()
                 converged = True
                             
             if self.iters >= self.max_iters:
-                print "Maximum numbers of EM iterations exceeded. Exiting training..."                
+                print "Maximum numbers of EM iterations exceeded. Exiting training..."
+                sys.stdout.flush()
                 converged = True
             
             self.iters += 1

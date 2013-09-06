@@ -61,15 +61,15 @@ class PoissonModelTrainer(ModelTrainer):
         print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
         print "Maximum copy number of each allele : ", allele_number_max
-        print "Initial tumor celluar frequency : ", phi_init
+        print "Initial tumor celluarity : ", phi_init
         print "Number of iterations : ", self.iters
         print "New log-likelihood : ", new_log_likelihood
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
         print "Parameters :"
-        print "Tumor cellular frequency by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
-        print "Tumor cellular frequency by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
-        print "Tumor cellular frequency combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
+        print "Tumor cellularity by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
+        print "Tumor cellularity by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
+        print "Tumor cellularity combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
         sys.stdout.flush()
         
 class PoissonLatentVariables(LatentVariables):
@@ -312,9 +312,9 @@ class PoissonModelParameters(ModelParameters):
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
         outfile.write("Maximum copy number of each allele : {0}".format(allele_number_max) + '\n')
-        outfile.write("Tumor cellular frequency by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
-        outfile.write("Tumor cellular frequency by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
-        outfile.write("Tumor cellular frequency combined : {0:.3f}".format(self.parameters['phi']) + '\n')
+        outfile.write("Tumor cellularity by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
+        outfile.write("Tumor cellularity by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
+        outfile.write("Tumor cellularity combined : {0:.3f}".format(self.parameters['phi']) + '\n')
         
         outfile.close()
         
