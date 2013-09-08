@@ -4,6 +4,7 @@ Created on 2012-08-18
 @author: Yi Li
 '''
 import os
+import sys
 
 import numpy as np
 import scipy
@@ -29,6 +30,10 @@ def plot_BAF_heatmap(args):
     for j in range(0, seg_num):
         BAF_counts_j = BAF_heatmap.BAF_counts[j]
         seg_name_j = segments[j][0]
+        
+        print 'Plotting segment {0}...'.format(seg_name_j)
+        sys.stdout.flush()
+        
         plot_BAF_heatmap_by_segment(BAF_counts_j, seg_name_j, outheatmap_dir_name)
 
 
@@ -39,14 +44,14 @@ def plot_BAF_heatmap_by_segment(BAF_counts, seg_name, outheatmap_dir_name):
     BAF_counts_sub = BAF_counts[BAF_counts_min:BAF_counts_max, BAF_counts_min:BAF_counts_max]
     color_max = BAF_counts_sub.max()
     
-    pyplot.figure(figsize=(8,8))
+    pyplot.figure(figsize=(8,8), dpi = 150)
     pyplot.xlim((0, 100))
     pyplot.ylim((0, 100))
     pyplot.xticks(scipy.linspace(0, 100, 11), scipy.linspace(0, 1, 11))
     pyplot.yticks(scipy.linspace(0, 100, 11), scipy.linspace(0, 1, 11))
-    pyplot.xlabel('Tumor genome B allele frequency (BAF)')
-    pyplot.ylabel('Normal genome B allele frequency (BAF)')
+    pyplot.xlabel('Tumor genome B allele frequency')
+    pyplot.ylabel('Normal genome B allele frequency')
     pyplot.imshow(BAF_counts, vmin = 0, vmax = color_max)
-    pyplot.colorbar(ticks=[0, color_max], orientation='vertical')
-    pyplot.savefig('./' + outheatmap_dir_name + '/' + seg_name)
+    pyplot.colorbar(ticks=[0, color_max], orientation='vertical', shrink=0.78)
+    pyplot.savefig('./' + outheatmap_dir_name + '/' + seg_name, bbox_inches='tight')
     
