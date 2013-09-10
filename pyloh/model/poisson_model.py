@@ -298,14 +298,14 @@ class PoissonModelParameters(ModelParameters):
         return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
     
     def write_parameters(self, filename_base):
-        outpurity_file_name = filename_base + '.PyLOH.purity'
+        outcellularity_file_name = filename_base + '.PyLOH.cellularity'
         outseg_ext_file_name = filename_base + '.PyLOH.segments.extended'
         
-        self._write_purity(outpurity_file_name)
+        self._write_cellularity(outcellularity_file_name)
         self._write_seg_extended(outseg_ext_file_name)
         
-    def _write_purity(self, outpurity_file_name):
-        outfile = open(outpurity_file_name, 'w')
+    def _write_cellularity(self, outcellularity_file_name):
+        outfile = open(outcellularity_file_name, 'w')
         
         c_S = self.restart_parameters['copy_number_base']
         allele_number_max = self.config_parameters['allele_number_max']
