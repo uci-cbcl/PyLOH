@@ -67,9 +67,9 @@ class PoissonModelTrainer(ModelTrainer):
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
         print "Parameters :"
-        print "Tumor cellularity by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
-        print "Tumor cellularity by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
-        print "Tumor cellularity combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
+        print "Tumor purity by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
+        print "Tumor purity by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
+        print "Tumor purity combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
         sys.stdout.flush()
         
 class PoissonLatentVariables(LatentVariables):
@@ -298,23 +298,23 @@ class PoissonModelParameters(ModelParameters):
         return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
     
     def write_parameters(self, filename_base):
-        outcellularity_file_name = filename_base + '.PyLOH.cellularity'
+        outpurity_file_name = filename_base + '.PyLOH.purity'
         outseg_ext_file_name = filename_base + '.PyLOH.segments.extended'
         
-        self._write_cellularity(outcellularity_file_name)
+        self._write_purity(outpurity_file_name)
         self._write_seg_extended(outseg_ext_file_name)
         
-    def _write_cellularity(self, outcellularity_file_name):
-        outfile = open(outcellularity_file_name, 'w')
+    def _write_purity(self, outpurity_file_name):
+        outfile = open(outpurity_file_name, 'w')
         
         c_S = self.restart_parameters['copy_number_base']
         allele_number_max = self.config_parameters['allele_number_max']
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
         outfile.write("Maximum copy number of each allele : {0}".format(allele_number_max) + '\n')
-        outfile.write("Tumor cellularity by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
-        outfile.write("Tumor cellularity by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
-        outfile.write("Tumor cellularity combined : {0:.3f}".format(self.parameters['phi']) + '\n')
+        outfile.write("Tumor purity by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
+        outfile.write("Tumor purity by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
+        outfile.write("Tumor purity combined : {0:.3f}".format(self.parameters['phi']) + '\n')
         
         outfile.close()
         

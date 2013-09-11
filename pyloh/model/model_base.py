@@ -3,6 +3,8 @@ Created on 2013-07-29
 
 @author: Yi Li
 '''
+import sys
+
 from ConfigParser import ConfigParser
 
 import numpy as np
