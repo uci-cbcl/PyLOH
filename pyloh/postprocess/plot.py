@@ -52,6 +52,7 @@ def plot_BAF_heatmap_by_segment(BAF_counts, seg_name, outheatmap_dir_name):
     pyplot.xlabel('Tumor genome B allele frequency')
     pyplot.ylabel('Normal genome B allele frequency')
     pyplot.imshow(BAF_counts, vmin = 0, vmax = color_max)
-    pyplot.colorbar(ticks=[0, color_max], orientation='vertical', shrink=0.78)
+    cbar = pyplot.colorbar(ticks=[0, color_max], orientation='vertical', shrink=0.78)
+    cbar.ax.set_yticklabels(['0', '>= ' + str(int(color_max))])
     pyplot.savefig('./' + outheatmap_dir_name + '/' + seg_name, bbox_inches='tight')
     
