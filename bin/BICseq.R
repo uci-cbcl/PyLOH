@@ -1,6 +1,6 @@
 library(BICseq)
 
-bicseq <- BICseq(sample = 'tumor_recal.bam', reference = 'normal_recal.bam')
+bicseq <- BICseq(sample = 'tumor.bam', reference = 'normal.bam')
 
 segs <- getBICseg(object = bicseq, bin = 100, lambda = 2, winSize = 200, quant = 0.95, mult = 1)
 
