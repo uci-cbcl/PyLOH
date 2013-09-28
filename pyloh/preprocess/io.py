@@ -1,5 +1,15 @@
 '''
-Created on 2013-07-20
+Created
+
+@author: Andrew Roth
+
+JointSNVMix-0.6.2
+joint_snv_mix.pre_processing.bam_to_jcnt.BamToJcntConverter
+joint_snv_mix.pre_processing.bam_to_jcnt.JointPileupIterator
+
+================================================================================
+
+Modified on 2013-07-20
 
 @author: Yi Li
 '''

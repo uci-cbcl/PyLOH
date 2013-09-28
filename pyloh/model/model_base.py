@@ -1,5 +1,17 @@
 '''
-Created on 2013-07-29
+Abstract classes which all models for classifying paired data should sub-class. 
+
+Created on 2011-03-31
+
+@author: Andrew Roth
+
+JointSNVMix-0.6.2
+joint_snv_mix.classification.base.EMModelTrainer
+joint_snv_mix.classification.base.PriorParser
+
+================================================================================
+
+Modified on 2013-07-29
 
 @author: Yi Li
 '''

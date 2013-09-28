@@ -1,5 +1,16 @@
 '''
-Created on 2013-07-31
+Created on 2010-08-30 for log_binomial_likelihood
+Created on 2010-11-22 for log_space_normalise_rows_annealing
+
+@author: Andrew Roth
+
+JointSNVMix-0.6.2
+joint_snv_mix.classification.utils.log_pdf.log_binomial_likelihood
+joint_snv_mix.classification.utils.normalise.log_space_normalise_rows
+
+================================================================================
+
+Modified on 2013-07-31
 
 @author: Yi Li
 '''
