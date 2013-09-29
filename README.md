@@ -22,10 +22,6 @@ cancer sequencing data to disambiguate multiple compatible
 solutions. We also introduce a novel visualization method 
 "BAF heat map" to to characterize the cluster pattern of LOH.
 
-
-
-
-
 Install
 =======
 
