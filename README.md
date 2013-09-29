@@ -28,7 +28,7 @@ Install
 Prerequisites
 -------------
 
-Python_ 2.7 are required to run PyLOH (1.0). Python 2.7.3 is recommended. 
+Python 2.7 are required to run PyLOH (1.0). [Python 2.7.3](http://www.python.org/download/releases/2.7.3/) is recommended. 
 
-.. _Python: http://www.python.org/download/releases/2.7.3/
+
 
