@@ -20,6 +20,4 @@ probabilistic model-based method PyLOH that leverage the
 cluster pattern of loss of heterozygosity observed in paired
 cancer sequencing data to disambiguate multiple compatible
 solutions. We also introduce a novel visualization method 
-"BAF heat map" to to characterize the cluster pattern of LOH
-widely observed in paired cancer sequencing data. 
-
+"BAF heat map" to to characterize the cluster pattern of LOH.
