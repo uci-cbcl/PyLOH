@@ -16,8 +16,8 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1 class="header">PyLOH v1.0</h1>
-        <p class="header"></p>
+        <h1 class="header">PyLOH</h1>
+        <p class="header">1.0</p>
 
         <ul>
           <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/zipball/master">Download ZIP</a></li>
@@ -26,43 +26,268 @@
         </ul>
 
         <p class="header">This project is maintained by <a class="header name" href="https://github.com/uci-cbcl">uci-cbcl</a></p>
-        <p class="header">For earlier versions, please view <a class="header name" href="https://github.com/uci-cbcl/PyLOH/releases">release</a></p>
 
 
       </header>
       <section>
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+        <h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>INTRODUCTION</h1>
 
-<p>Let take a test
-This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>Estimation of tumor purity is a crucial step in understanding 
+the complex copy number landscapes of heterogeneous tumor 
+samples through next-generation sequencing data. A prominent 
+problem in tumor purity estimation is how to disambiguate 
+multiple compatible solutions, as distinct combinations of 
+tumor purity and ploidy can fit the sequencing data equivalently
+well. Current methods "break the tie" relying on either prior 
+information or numerical heuristics rather than comprehensively 
+explaining the sequencing data itself. Such approaches will 
+lead to fundamental bias when the ground truth significantly
+deviates from the prior information. Here we propose a full
+probabilistic model-based method PyLOH that leverage the 
+cluster pattern of loss of heterozygosity observed in paired
+cancer sequencing data to disambiguate multiple compatible
+solutions. We also introduce a novel visualization method 
+"BAF heat map" to to characterize the cluster pattern of LOH.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<h1>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>INSTALL</h1>
+
+<h2>
+<a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<ul>
+<li><p>Although not mandatory, Linux system is recommended.</p></li>
+<li><p>Python (2.7). <a href="http://www.python.org/download/releases/2.7.3/">Python 2.7.3</a> is recommended.</p></li>
+<li><p><a href="http://www.numpy.org/">Numpy</a>(&gt;=1.6.1). You can download the source of Numpy from <a href="http://sourceforge.net/projects/numpy/files/">here</a>.</p></li>
+<li><p><a href="http://www.scipy.org/">Scipy</a>(&gt;=0.10). You can download the source of Scipy from <a href="http://sourceforge.net/projects/scipy/files/">here</a>.</p></li>
+<li><p><a href="https://code.google.com/p/pysam/">Pysam</a>(&gt;=0.7). To install Pysam, you also need to install <a href="http://cython.org/">Cython</a> first. </p></li>
+<li><p><a href="http://matplotlib.org/">matplotlib</a>(&gt;=1.2.0) is required to plot BAF heat map.</p></li>
+</ul><p>Altough not required by PyLOH, <a href="http://samtools.sourceforge.net/">samtools</a> can be useful for creating bam, bam index and fasta index 
+files which are required by the pysam module of PyLOH. </p>
+
+<h2>
+<a name="install-from-source" class="anchor" href="#install-from-source"><span class="octicon octicon-link"></span></a>Install from source</h2>
+
+<p>Download the compressed source file PyLOH-*.tar.gz and do as follows:</p>
+
+<pre><code>$ tar -xzvf PyLOH-*.tar.gz
+$ cd PyLOH-*
+$ python setup.py install
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>If you prefer to install PyLOH other than the default directory, you can also use this command:</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<pre><code>$ python setup.py install --prefix /home/yili/
+</code></pre>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p>There are also <code>config/</code> and <code>bin/</code> folders under PyLOH-*. The <code>config/</code> folder contains example priors and the <code>bin/</code> folder contains 
+useful utilities, such as the R code to run <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a> and the python script to 
+convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<h1>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>USAGE</h1>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<p>PyLOH is composed of three modules: </p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<ul>
+<li><p><code>preprocess</code>. Preprocess the reads aliments of paired normal-tumor samples in BAM format and produce the paired counts file, 
+preprocessed segments file and preprocessed BAF heat map file as output.</p></li>
+<li><p><code>run_model</code>. Take the paired counts file and preprocessed segments file as input, estimate tumor purity, the copy number and the
+allele type of each segment.</p></li>
+<li><p><code>postprocess</code>. Take the preprocessed BAF heat map file as input and plot the BAF heat map for each segment as output.</p></li>
+</ul><p>The general workflow of PyLOH is this
+<img src="https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/workflow.png?raw=true" alt="alt tag"></p>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<h2>
+<a name="preprocess" class="anchor" href="#preprocess"><span class="octicon octicon-link"></span></a>Preprocess</h2>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>This part of README is based on <a href="https://code.google.com/p/joint-snv-mix/wiki/runningOld">JoinSNVMix</a>. To preprocess the paired 
+cancer sequencing data, execute:</p>
+
+<pre><code>$ PyLOH.py preprocess REFERENCE_GENOME.fasta NORMAL.bam TUMOUR.bam BASENAME --segments_bed SEGMENTS.bed --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
+</code></pre>
+
+<p><strong>REFERENCE_GENOME.fasta</strong> The path to the fasta file that the paired BAM files aligned to. Note that the index file should be generated 
+for the reference genome. This can be done by running samtools as follows:</p>
+
+<p><code>$ samtools faidx REFERENCE_GENOME.fasta</code></p>
+
+<p><strong>NORMAL.bam</strong> The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can
+be done by running</p>
+
+<p><code>$ samtools index NORMAL.bam</code></p>
+
+<p><strong>TUMOUR.bam</strong> The bam file for the tumour sample. As for the normal this file needs to be indexed.</p>
+
+<p><strong>BASENAME</strong> The base name of preprocessed files to be created.</p>
+
+<p><strong>--segments_bed</strong> Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
+But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a>.</p>
+
+<p><strong>--min_depth</strong> Minimum depth in both normal and tumor sample required to use a site in the analysis.</p>
+
+<p><strong>--min_base_qual</strong> Minimum base quality required for each base.</p>
+
+<p><strong>--min_map_qual</strong> Minimum mapping quality required for each base.</p>
+
+<p><strong>--process_num</strong> Number of processes to launch for preprocessing.</p>
+
+<h2>
+<a name="run-model" class="anchor" href="#run-model"><span class="octicon octicon-link"></span></a>Run model</h2>
+
+<p>After the paired cancer sequencing data is preprocessed, we can run the probabilistic model of PyLOH by execute:</p>
+
+<pre><code>$ PyLOH.py run_model BASENAME --allele_number_max 2 --max_iters 100 --stop_value 1e-7
+</code></pre>
+
+<p><strong>BASENAME</strong> The base name of preprocessed files created in the preprocess step.</p>
+
+<p><strong>--allele_number_max</strong> The maximum copy number of each allele allows to take.</p>
+
+<p><strong>--priors</strong> Path to the file of the prior distribution. The prior file must be consistent with the --allele_number_max. If not provided,
+use uniform prior, which is recommended.</p>
+
+<p><strong>--max_iters</strong> Maximum number of iterations for training.</p>
+
+<p><strong>--stop_value</strong> Stop value of the EM algorithm for training. If the change of log-likelihood is lower than this value, stop training.</p>
+
+<h2>
+<a name="postprocess" class="anchor" href="#postprocess"><span class="octicon octicon-link"></span></a>Postprocess</h2>
+
+<p>Currently, the postprocess module is only for plotting the BAF heat map of each segment:</p>
+
+<pre><code>$ PyLOH.py BAF_heatmap BASENAME
+</code></pre>
+
+<p><strong>BASENAME</strong> The base name of preprocessed files created in the preprocess step.</p>
+
+<h2>
+<a name="output-files" class="anchor" href="#output-files"><span class="octicon octicon-link"></span></a>Output files</h2>
+
+<p><strong>*.PyLOH.counts</strong> The preprocessed paired counts file. It contains the allelic counts information of sites, which are heterozygous 
+loci in the normal genome. The definition of each column in a *.PyLOH.counts file is listed here:</p>
+
+<table>
+<thead><tr>
+<th align="left">Column</th>
+<th align="left">Definition</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">seg_index</td>
+<td align="left">Index of each segment</td>
+</tr>
+<tr>
+<td align="left">normal_A</td>
+<td align="left">Count of bases match A allele in the normal sample</td>
+</tr>
+<tr>
+<td align="left">normal_B</td>
+<td align="left">Count of bases match B allele in the normal sample</td>
+</tr>
+<tr>
+<td align="left">tumor_A</td>
+<td align="left">Count of bases match A allele in the tumor sample</td>
+</tr>
+<tr>
+<td align="left">tumor_B</td>
+<td align="left">Count of bases match B allele in the tumor sample</td>
+</tr>
+</tbody>
+</table><p><strong>*.PyLOH.segments</strong> The preprocessed segments file. It contains the genomic information of each segment. The definition of each
+column in a *.PyLOH.segments file is listed here:</p>
+
+<table>
+<thead><tr>
+<th align="left">Column</th>
+<th align="left">Definition</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">seg_name</td>
+<td align="left">Name of the segment</td>
+</tr>
+<tr>
+<td align="left">chrom</td>
+<td align="left">Chromosome of the segment</td>
+</tr>
+<tr>
+<td align="left">start</td>
+<td align="left">Start position of the segment</td>
+</tr>
+<tr>
+<td align="left">end</td>
+<td align="left">End position of the segment</td>
+</tr>
+<tr>
+<td align="left">normal_reads_num</td>
+<td align="left">Count of reads mapped to the segment in the normal sample</td>
+</tr>
+<tr>
+<td align="left">tumor_reads_num</td>
+<td align="left">Count of reads mapped to the segment in the normal sample</td>
+</tr>
+<tr>
+<td align="left">LOH_frec</td>
+<td align="left">Fraction of LOH sites in the segment</td>
+</tr>
+<tr>
+<td align="left">LOH_status</td>
+<td align="left">FALSE -&gt; no LOH; TRUE -&gt; significant LOH; UNCERTAIN -&gt; medium level LOH</td>
+</tr>
+<tr>
+<td align="left">log2_ratio</td>
+<td align="left">Log2 ratio between tumor_reads_num and normal_reads_num</td>
+</tr>
+</tbody>
+</table><p><strong>*.PyLOH.segments.extended</strong> The extended segments file after run_model. There are two additional columns:</p>
+
+<table>
+<thead><tr>
+<th align="left">Column</th>
+<th align="left">Definition</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">allele_type</td>
+<td align="left">Estimated allele type of the segment</td>
+</tr>
+<tr>
+<td align="left">copy_number</td>
+<td align="left">Estimated copy number of the segment</td>
+</tr>
+</tbody>
+</table><p><strong>*.PyLOH.purity</strong> Estimated tumor purity.</p>
+
+<p><strong>*.PyLOH.heatmap.pkl</strong> The preprocessed BAF heat map file in Python pickle format.</p>
+
+<p><strong>*.PyLOH.heatmap.plot</strong> The folder of BAF heat maps plotted for each segment. A typical BAF heat map looks like this
+<img src="https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/BAF_heamap_sample.png?raw=true" alt="alt tag"></p>
+
+<h1>
+<a name="other" class="anchor" href="#other"><span class="octicon octicon-link"></span></a>OTHER</h1>
+
+<h2>
+<a name="bic-seq-related-utilities" class="anchor" href="#bic-seq-related-utilities"><span class="octicon octicon-link"></span></a>BIC-seq related utilities</h2>
+
+<p>We highly recommend using automatic segmentation algorithm to partition the tumor genome, and thus prepare the segments file in BED format.
+For exmaple, we used <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a> in the original paper. To run a BICseq analysis, you
+can copy the commands in <code>bin/BICseq.R</code> and paste them in a R interative shell. Or you can also run the R script from the command line:</p>
+
+<pre><code>$ R CMD BATCH bin/BICseq.R
+</code></pre>
+
+<p>Note that,<code>normal.bam</code> and <code>tumor.bam</code> must be in the same directory where you run the command. The R script will output a segments file
+<code>segments.BICseq</code>. Then you can use the other script <code>bin/BICseq2bed.py</code> to convert the segments file into BED format:</p>
+
+<pre><code>$ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
+</code></pre>
+
+<p><strong>--seg_length</strong> Only convert segments with length longer than the threshold.</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
