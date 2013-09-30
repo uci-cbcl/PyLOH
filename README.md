@@ -92,27 +92,27 @@ cancer sequencing data, execute:
 $ PyLOH.py preprocess REFERENCE_GENOME.fasta NORMAL.bam TUMOUR.bam BASENAME --segments_bed_file_name SEGMENTS.bed --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
 ```
 
-* REFERENCE_GENOME.fasta. The path to the fasta file that the paired BAM files aligned to. Note that the index file should be generated 
+**REFERENCE_GENOME.fasta** The path to the fasta file that the paired BAM files aligned to. Note that the index file should be generated 
 for the reference genome. This can be done by running samtools as follows:
 
-  `$ samtools faidx REFERENCE_GENOME.fasta`
+`$ samtools faidx REFERENCE_GENOME.fasta`
 
-* NORMAL.bam. The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can
+**NORMAL.bam** The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can
 be done by running
 
-  `$ samtools index NORMAL.bam`
+`$ samtools index NORMAL.bam`
 
-* TUMOUR.bam. The bam file for the tumour sample. As for the normal this file needs to be indexed.
+**TUMOUR.bam** The bam file for the tumour sample. As for the normal this file needs to be indexed.
 
-* BASENAME is the base name of preprocessed files to be created.
+**BASENAME** The base name of preprocessed files to be created.
 
-* --segments_bed_file_name SEGMENTS.bed. Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the 
+**--segments_bed_file_name SEGMENTS.bed** Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the 
 segmentaion. But using automatic segmentation algorithm is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
 
-* --min_depth 20. Minimum depth of 20 in both tumor and normal sample required to use a site in the analysis.
+**--min_depth 20** Minimum depth of 20 in both tumor and normal sample required to use a site in the analysis.
 
-* --min_base_qual 10. Remove bases with base quality lower than 10.
+**--min_base_qual 10** Remove bases with base quality lower than 10.
 
-* --min_map_qual 10. Remove bases with mapping quality lower than 10.
+**--min_map_qual 10** Remove bases with mapping quality lower than 10.
 
-* --process_num 10. Use 10 processes to launch the preprocess module.
+**--process_num 10** Use 10 processes to launch the preprocess module.
