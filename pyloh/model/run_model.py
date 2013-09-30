@@ -17,7 +17,7 @@ def run_poisson_model(args):
     restart_num = len(restart_parameters_list)
     
     model = PoissonProbabilisticModel(args.allele_number_max)
-    model.read_priors(args.priors_file_name)
+    model.read_priors(args.priors)
     model.read_data(args.filename_base)
     model.preprocess()
 

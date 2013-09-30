@@ -72,7 +72,7 @@ parser_run_model.add_argument('filename_base',
 parser_run_model.add_argument('--allele_number_max', default=2, type=int,
                             help='''Maximum copy number of each allele allows to take. Default is 2.''')
 
-parser_run_model.add_argument('--priors_file_name', default=None, type=str,
+parser_run_model.add_argument('--priors', default=None, type=str,
                              help='''File of the prior distribution. If not provided,
                                 use uniform prior. Default is None.''')
 
