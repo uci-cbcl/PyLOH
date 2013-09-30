@@ -5,7 +5,7 @@ README for PyLOH 1.0
 INTRODUCTION
 ============
 
-Estimation of tumor purity is a crucial step in understanding
+Estimation of tumor purity is a crucial step in understanding 
 the complex copy number landscapes of heterogeneous tumor 
 samples through next-generation sequencing data. A prominent 
 problem in tumor purity estimation is how to disambiguate 
@@ -26,8 +26,6 @@ solutions. We also introduce a novel visualization method
 
 INSTALL
 =======
-
-
 
 Prerequisites
 -------------
@@ -62,9 +60,59 @@ If you prefer to install PyLOH other than the default directory, you can also us
 $ python setup.py install --prefix /home/yili/
 ```
 
-There are also `config/` and `bin/` folders under PyLOH-*. The `config/` folder contains example priors and the `bin/` folder contains useful 
-utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) and the python script to convert
-BICseq results to BED file. You can copy these two folders somewhere easily accessible.
+There are also `config/` and `bin/` folders under PyLOH-*. The `config/` folder contains example priors and the `bin/` folder contains 
+useful utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) and the python script to 
+convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.
 
 
 
+USAGE
+=====
+
+Overview
+--------
+
+PyLOH is composed of three modules: 
+* `preprocess`. Preprocess the reads aliments of paired normal-tumor samples in BAM format and produces the paired counts file, 
+preprocessed segments file and preprocessed BAF heat map file as output.
+ 
+* `run_model`. Take the paired counts file and preprocessed segments file as input, estimates tumor purity, the copy number and the
+allele type of each segment.
+
+* `postprocess`. Take the preprocessed BAF heat map file as input and plots the BAF heat map for each segment as output.
+
+The general workflow of PyLOH is this
+![alt tag](https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/workflow.png?raw=true)
+
+Preprocess
+----------
+This part of README is based on [JoinSNVMix](https://code.google.com/p/joint-snv-mix/wiki/runningOld). To preprocess the paired 
+cancer sequencing data, execute:
+```
+$ PyLOH.py preprocess REFERENCE_GENOME.fasta NORMAL.bam TUMOUR.bam BASENAME --segments_bed_file_name SEGMENTS.bed --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
+```
+
+* REFERENCE_GENOME.fasta. The path to the fasta file that the paired BAM files aligned to. Note that the index file should be generated 
+for the reference genome. This can be done by running samtools as follows:
+
+  `$ samtools faidx REFERENCE_GENOME.fasta`
+
+* NORMAL.bam. The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can
+be done by running
+
+  `$ samtools index NORMAL.bam`
+
+* TUMOUR.bam. The bam file for the tumour sample. As for the normal this file needs to be indexed.
+
+* BASENAME is the base name of preprocessed files to be created.
+
+* --segments_bed_file_name SEGMENTS.bed. Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the 
+segmentaion. But using automatic segmentation algorithm is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
+
+* --min_depth 20. Minimum depth of 20 in both tumor and normal sample required to use a site in the analysis.
+
+* --min_base_qual 10. Remove bases with base quality lower than 10.
+
+* --min_map_qual 10. Remove bases with mapping quality lower than 10.
+
+* --process_num 10. Use 10 processes to launch the preprocess module.
