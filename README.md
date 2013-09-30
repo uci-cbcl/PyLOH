@@ -73,13 +73,13 @@ USAGE
 Overview
 --------
 PyLOH is composed of three modules: 
-* `preprocess`. Preprocess the reads aliments of paired normal-tumor samples in BAM format and produces the paired counts file, 
+* `preprocess`. Preprocess the reads aliments of paired normal-tumor samples in BAM format and produce the paired counts file, 
 preprocessed segments file and preprocessed BAF heat map file as output.
  
-* `run_model`. Take the paired counts file and preprocessed segments file as input, estimates tumor purity, the copy number and the
+* `run_model`. Take the paired counts file and preprocessed segments file as input, estimate tumor purity, the copy number and the
 allele type of each segment.
 
-* `postprocess`. Take the preprocessed BAF heat map file as input and plots the BAF heat map for each segment as output.
+* `postprocess`. Take the preprocessed BAF heat map file as input and plot the BAF heat map for each segment as output.
 
 The general workflow of PyLOH is this
 ![alt tag](https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/workflow.png?raw=true)
@@ -107,8 +107,8 @@ be done by running
 
 **BASENAME** The base name of preprocessed files to be created.
 
-**--segments_bed SEGMENTS.bed** Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
-But using automatic segmentation algorithm is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
+**--segments_bed** Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
+But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
 
 **--min_depth** Minimum depth in both normal and tumor sample required to use a site in the analysis.
 
@@ -129,8 +129,8 @@ $ PyLOH.py run_model BASENAME --allele_number_max 2 --max_iters 100 --stop_value
 
 **--allele_number_max** The maximum copy number of each allele allows to take.
 
-**--priors_file_name** Path to the file of the prior distribution. The prior file must be consistent with the --allele_number_max. If not 
-provided, use uniform prior, which is recommended.
+**--priors** Path to the file of the prior distribution. The prior file must be consistent with the --allele_number_max. If not provided,
+use uniform prior, which is recommended.
 
 **--max_iters** Maximum number of iterations for training.
 
@@ -149,7 +149,7 @@ $ PyLOH.py BAF_heatmap BASENAME
 
 Output files
 ------------
-**\*.PyLOH.counts** The preprocessed paired counts file. It which contains the allelic counts information of sites, which are heterozygous 
+**\*.PyLOH.counts** The preprocessed paired counts file. It contains the allelic counts information of sites, which are heterozygous 
 loci in the normal genome. The definition of each column in a *.PyLOH.counts file is listed here:
 
 | Column    | Definition                                         | 
@@ -160,26 +160,27 @@ loci in the normal genome. The definition of each column in a *.PyLOH.counts fil
 | tumor_A   | Count of bases match A allele in the tumor sample  |
 | tumor_B   | Count of bases match B allele in the tumor sample  |
 
-**\*.PyLOH.segments** The preprocessed segments file. It which contains the genomic information of each segment. The definition of each
+**\*.PyLOH.segments** The preprocessed segments file. It contains the genomic information of each segment. The definition of each
 column in a *.PyLOH.segments file is listed here:
 
-| Column           | Definition                                                | 
-| :--------------- | :-------------------------------------------------------- | 
-| seg_name         | Name of the segment                                       |      
-| chrom            | Chromosome of the segment                                 |  
-| start            | Start position of the segment                             |
-| end              | End position of the segment                               |
-| normal_reads_num | Count of reads mapped to the segment in the normal sample |
-| tumor_reads_num  | Count of reads mapped to the segment in the normal sample |
-| LOH_frec         | Fraction of LOH sites in the segment                      |
-| log2_ratio       | Log2 ratio between tumor_reads_num and normal_reads_num   |
+| Column           | Definition                                                              | 
+| :--------------- | :---------------------------------------------------------------------- | 
+| seg_name         | Name of the segment                                                     |      
+| chrom            | Chromosome of the segment                                               |  
+| start            | Start position of the segment                                           |
+| end              | End position of the segment                                             |
+| normal_reads_num | Count of reads mapped to the segment in the normal sample               |
+| tumor_reads_num  | Count of reads mapped to the segment in the normal sample               |
+| LOH_frec         | Fraction of LOH sites in the segment                                    |
+| LOH_status       | FALSE -> no LOH; TRUE -> significant LOH; UNCERTAIN -> medium level LOH |
+| log2_ratio       | Log2 ratio between tumor_reads_num and normal_reads_num                 |
 
 **\*.PyLOH.segments.extended** The extended segments file after run_model. There are two additional columns:
 
-| Column           | Definition                                                | 
-| :--------------- | :-------------------------------------------------------- | 
-| allele_type      | Estimated allele type of the segment                      |      
-| copy_number      | Estimated copy number of the segment                      |  
+| Column           | Definition                            | 
+| :--------------- | :-------------------------------------| 
+| allele_type      | Estimated allele type of the segment  |      
+| copy_number      | Estimated copy number of the segment  |  
 
 **\*.PyLOH.purity** Estimated tumor purity.
 
