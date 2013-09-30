@@ -28,19 +28,19 @@ subparsers = parser.add_subparsers()
 parser_preprocess = subparsers.add_parser('preprocess',
                                     help='''Preprocess paired normal and tumor BAM files''')
 
-parser_preprocess.add_argument('reference_genome_file_name',
+parser_preprocess.add_argument('reference_genome',
                           help='''FASTA file for reference genome.''')
 
-parser_preprocess.add_argument('normal_bam_file_name',
+parser_preprocess.add_argument('normal_bam',
                           help='''BAM file for normal sample.''')
 
-parser_preprocess.add_argument('tumor_bam_file_name',
+parser_preprocess.add_argument('tumor_bam',
                           help='''BAM file for tumor sample.''')
 
 parser_preprocess.add_argument('filename_base',
                           help='''Base name of preprocessed files to be created.''')
 
-parser_preprocess.add_argument('--segments_bed_file_name', default=None, type=str,
+parser_preprocess.add_argument('--segments_bed', default=None, type=str,
                           help='''BED file for segments. If not provided,
                             use autosomes as segments. Default is None.''')
 

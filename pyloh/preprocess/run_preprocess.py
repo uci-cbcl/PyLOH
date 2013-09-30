@@ -16,19 +16,19 @@ from pyloh.preprocess.io import PairedCountsIterator, PairedPileupIterator
 from pyloh.preprocess.utils import *
 
 def run_preprocess(args):        
-    normal_bam = pysam.Samfile(args.normal_bam_file_name, 'rb')
-    tumor_bam = pysam.Samfile(args.tumor_bam_file_name, 'rb')
+    normal_bam = pysam.Samfile(args.normal_bam, 'rb')
+    tumor_bam = pysam.Samfile(args.tumor_bam, 'rb')
     
     segments = Segments()
     
-    if args.segments_bed_file_name == None:
+    if args.segments_bed == None:
         print 'Loading segments by 22 autosomes...'
         sys.stdout.flush()
         segments.segmentation_by_chrom(normal_bam, tumor_bam)
     else:
-        print 'Loading segments by {0}...'.format(args.segments_bed_file_name)
+        print 'Loading segments by {0}...'.format(args.segments_bed)
         sys.stdout.flush()
-        segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed_file_name)
+        segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed)
     
     normal_bam.close()
     tumor_bam.close()
@@ -36,9 +36,9 @@ def run_preprocess(args):
     time_start = time.time()           
     
     converter = BamToDataConverter(
-                                   args.normal_bam_file_name,
-                                   args.tumor_bam_file_name,
-                                   args.reference_genome_file_name,
+                                   args.normal_bam,
+                                   args.tumor_bam,
+                                   args.reference_genome,
                                    args.filename_base,
                                    segments,
                                    min_depth=args.min_depth,
@@ -55,12 +55,12 @@ def run_preprocess(args):
     sys.stdout.flush()
 
 class BamToDataConverter:
-    def __init__(self, normal_bam_file_name, tumor_bam_file_name,
-                 reference_genome_file_name, filename_base,
+    def __init__(self, normal_bam_filename, tumor_bam_filename,
+                 reference_genome_filename, filename_base,
                  segments, min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
-        self.normal_bam_file_name = normal_bam_file_name
-        self.tumor_bam_file_name = tumor_bam_file_name
-        self.reference_genome_file_name = reference_genome_file_name
+        self.normal_bam_filename = normal_bam_filename
+        self.tumor_bam_filename = tumor_bam_filename
+        self.reference_genome_filename = reference_genome_filename
         self.filename_base = filename_base
         
         self.segments = segments
@@ -87,8 +87,8 @@ class BamToDataConverter:
             start = self.segments[j][2]
             end = self.segments[j][3]
             
-            args_tuple = (seg_name, chrom, start, end, self.normal_bam_file_name,
-                          self.tumor_bam_file_name, self.reference_genome_file_name,
+            args_tuple = (seg_name, chrom, start, end, self.normal_bam_filename,
+                          self.tumor_bam_filename, self.reference_genome_filename,
                           self.min_depth, self.min_bqual, self.min_mqual)
             
             args_list.append(args_tuple)
@@ -114,15 +114,15 @@ class BamToDataConverter:
 # Function
 #===============================================================================
 def process_by_segment(args_tuple):
-    seg_name, chrom, start, end, normal_bam_file_name, tumor_bam_file_name, \
-    reference_genome_file_name, min_depth, min_bqual, min_mqual= args_tuple
+    seg_name, chrom, start, end, normal_bam_filename, tumor_bam_filename, \
+    reference_genome_filename, min_depth, min_bqual, min_mqual= args_tuple
     
     print 'Preprocessing segment {0}...'.format(seg_name)
     sys.stdout.flush()
 
-    normal_bam = pysam.Samfile(normal_bam_file_name, 'rb')
-    tumor_bam = pysam.Samfile(tumor_bam_file_name, 'rb')
-    ref_genome_fasta = pysam.Fastafile(reference_genome_file_name)
+    normal_bam = pysam.Samfile(normal_bam_filename, 'rb')
+    tumor_bam = pysam.Samfile(tumor_bam_filename, 'rb')
+    ref_genome_fasta = pysam.Fastafile(reference_genome_filename)
     
     normal_pileup_iter = normal_bam.pileup(chrom, start, end)
     tumor_pileup_iter = tumor_bam.pileup(chrom, start, end)
