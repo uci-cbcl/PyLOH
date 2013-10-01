@@ -186,8 +186,7 @@ column in a *.PyLOH.segments file is listed here:
 
 **\*.PyLOH.heatmap.pkl** The preprocessed BAF heat map file in Python pickle format.
 
-**\*.PyLOH.heatmap.plot** The folder of BAF heat maps plotted for each segment. A typical BAF heat map looks like this
-![alt tag](https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/BAF_heamap_sample.png?raw=true)
+**\*.PyLOH.heatmap.plot** The folder of BAF heat maps plotted for each segment.
 
 
 
