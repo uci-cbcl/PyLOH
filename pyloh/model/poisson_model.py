@@ -99,11 +99,14 @@ class PoissonLatentVariables(LatentVariables):
             if LOH_status_j == 'NONE':
                 continue
             
-            psi_j, u_j, v_j, w_j = self._sufficient_statistics_by_segment(parameters, eta, j)
+            #psi_j, u_j, v_j, w_j = self._sufficient_statistics_by_segment(parameters, eta, j)
+            #sufficient_statistics['psi'][j, :] = psi_j
+            #sufficient_statistics['u'][j, :] = u_j
+            #sufficient_statistics['v'][j, :] = v_j
+            #sufficient_statistics['w'][j, :] = w_j
+            
+            psi_j = self._sufficient_statistics_by_segment(parameters, eta, j)
             sufficient_statistics['psi'][j, :] = psi_j
-            sufficient_statistics['u'][j, :] = u_j
-            sufficient_statistics['v'][j, :] = v_j
-            sufficient_statistics['w'][j, :] = w_j
             
         self.sufficient_statistics = sufficient_statistics
     
@@ -122,19 +125,23 @@ class PoissonLatentVariables(LatentVariables):
         c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
         
-        log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi, self.config_parameters)
-        log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi, self.config_parameters)
+        #log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi, self.config_parameters)
+        #log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi, self.config_parameters)
+        log_likelihoods = poisson_ll_func(b_T_j, d_T_j, c_S, D_N_j, D_T_j, Lambda_S, rho_j, phi, config_parameters)
 
-        xi_j = log_space_normalise_rows_annealing(log_likelihoods_LOH, eta)
-        psi_j = log_space_normalise_rows_annealing(log_likelihoods_CNV, eta)
+        #xi_j = log_space_normalise_rows_annealing(log_likelihoods_LOH, eta)
+        #psi_j = log_space_normalise_rows_annealing(log_likelihoods_CNV, eta)
+        psi_j = log_space_normalise_rows_annealing(log_likelihoods, eta)
         
-        u_j = np.add.reduce(xi_j, axis = 0)
-        v_j = xi_j*np.dot(b_T_j.reshape(I_j, 1), np.ones((1, G)))
-        v_j = np.add.reduce(v_j, axis = 0)
-        w_j = xi_j*np.dot(d_T_j.reshape(I_j, 1), np.ones((1, G)))
-        w_j = np.add.reduce(w_j, axis = 0)
+        #u_j = np.add.reduce(xi_j, axis = 0)
+        #v_j = xi_j*np.dot(b_T_j.reshape(I_j, 1), np.ones((1, G)))
+        #v_j = np.add.reduce(v_j, axis = 0)
+        #w_j = xi_j*np.dot(d_T_j.reshape(I_j, 1), np.ones((1, G)))
+        #w_j = np.add.reduce(w_j, axis = 0)
+        #
+        #return psi_j, u_j, v_j, w_j
         
-        return psi_j, u_j, v_j, w_j
+        return psi_j
 
 class PoissonModelParameters(ModelParameters):
     def __init__(self, priors, data, restart_parameters, config_parameters):
@@ -429,6 +436,23 @@ class PoissonModelLikelihood(ModelLikelihood):
 #===============================================================================
 # Function
 #===============================================================================
+def poisson_ll_func(b_T, d_T, c_S, D_N, D_T, Lambda_S, rho, phi, config_parameters):
+    I = d_T.shape[0]
+    c_N = np.array(constants.COPY_NUMBER_NORMAL)
+    c_T = np.array(config_parameters['copynumber_tumor'])
+    mu_N = np.array(constants.MU_N)
+    mu_T = np.array(config_parameters['MU_T'])
+    c_E_j = get_c_E(c_N, c_T, phi)
+    c_E_s = get_c_E(c_N, c_S, phi)
+    
+    lambda_E = D_N*c_E_j*Lambda_S/c_E_s
+    
+    mu_E = get_mu_E(mu_N, mu_T, c_N, c_T, phi)
+        
+    log_likelihoods = np.log(rho) + log_poisson_likelihood(D_T, lambda_E) \
+    + np.add.reduce(log_binomial_likelihood(b_T, d_T, mu_E), axis = 0)
+    
+    return log_likelihoods
 
 def poisson_ll_func_LOH(b_T, d_T, rho, phi, config_parameters):
     I = d_T.shape[0]
