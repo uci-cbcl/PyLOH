@@ -31,6 +31,7 @@ class PoissonProbabilisticModel(ProbabilisticModel):
         config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.allele_number_max)
         config_parameters['alleletypes_tumor'] = get_alleletypes_tumor(self.allele_number_max)
         config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.allele_number_max)
+        config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.allele_number_max)
         config_parameters['MU_T'] = get_MU_T(self.allele_number_max)
         
         self.config_parameters = config_parameters

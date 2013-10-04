@@ -88,16 +88,24 @@ def get_alleletypes_tumor(allele_number_max):
     
     return alleletypes_tumor
 
+#def get_copynumber_tumor(allele_number_max):
+#    copynumber_tumor = []
+#    
+#    for B_num in range(0, allele_number_max + 1):
+#        for A_num in range(0, allele_number_max + 1):
+#            c_T = A_num + B_num
+#                
+#            copynumber_tumor.append(c_T)
+#    
+#    return copynumber_tumor
+
 def get_copynumber_tumor(allele_number_max):
-    copynumber_tumor = []
     
-    for B_num in range(0, allele_number_max + 1):
-        for A_num in range(0, allele_number_max + 1):
-            c_T = A_num + B_num
-                
-            copynumber_tumor.append(c_T)
+    return range(0, allele_number_max*2 + 1)
     
-    return copynumber_tumor
+def get_copynumber_tumor_num(allele_number_max):
+    
+    return allele_number_max*2
 
 def get_MU_T(allele_number_max):
     empiri_BAF = constants.EMPIRI_BAF
