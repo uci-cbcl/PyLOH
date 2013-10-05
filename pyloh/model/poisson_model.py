@@ -33,6 +33,7 @@ class PoissonProbabilisticModel(ProbabilisticModel):
         config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.allele_number_max)
         config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.allele_number_max)
         config_parameters['MU_T'] = get_MU_T(self.allele_number_max)
+        config_parameters['P_CG'] = get_P_CG(self.allele_number_max)
         
         self.config_parameters = config_parameters
         self.data.segments.compute_Lambda_S()
@@ -85,35 +86,28 @@ class PoissonLatentVariables(LatentVariables):
             eta = 1
         
         J = self.data.seg_num
+        C = self.config_parameters['copynumber_tumor_num']
         G = self.config_parameters['genotypes_tumor_num']
         
         sufficient_statistics = {}
         
-        sufficient_statistics['psi'] = np.zeros((J, G))
-        sufficient_statistics['u'] = np.zeros((J, G))
-        sufficient_statistics['v'] = np.zeros((J, G))
-        sufficient_statistics['w'] = np.zeros((J, G))
+        sufficient_statistics['xi'] = []
+        sufficient_statistics['psi'] =  np.zeros((J, C))
         
         for j in range(0, J):
             LOH_status_j = self.data.segments[j][7]
             
             if LOH_status_j == 'NONE':
+                sufficient_statistics['xi'].append('NONE')
                 continue
-            
-            #psi_j, u_j, v_j, w_j = self._sufficient_statistics_by_segment(parameters, eta, j)
-            #sufficient_statistics['psi'][j, :] = psi_j
-            #sufficient_statistics['u'][j, :] = u_j
-            #sufficient_statistics['v'][j, :] = v_j
-            #sufficient_statistics['w'][j, :] = w_j
-            
-            psi_j = self._sufficient_statistics_by_segment(parameters, eta, j)
+                        
+            xi_j, psi_j = self._sufficient_statistics_by_segment(parameters, eta, j)
+            sufficient_statistics['xi'].append(xi_j)
             sufficient_statistics['psi'][j, :] = psi_j
             
         self.sufficient_statistics = sufficient_statistics
     
-    def _sufficient_statistics_by_segment(self, parameters, eta, j):
-        G = self.config_parameters['genotypes_tumor_num']
-        
+    def _sufficient_statistics_by_segment(self, parameters, eta, j):        
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
         d_T_j = a_T_j + b_T_j
@@ -126,13 +120,19 @@ class PoissonLatentVariables(LatentVariables):
         c_S = self.restart_parameters['copy_number_base']
         Lambda_S = self.data.segments.Lambda_S
         
+        xi_j = self._get_xi_by_segment(b_T_j, d_T_j, I_j, phi, eta)
+        
+        kappa_j = self._get_kappa_by_segment(b_T_j, d_T_j, I_j, phi, xi_j, eta)
+        
+        psi_j = self._get_psi_by_segment(D_N_j, D_T_j, phi, rho_j, kappa_j, eta)
+        
         #log_likelihoods_LOH = poisson_ll_func_LOH(b_T_j, d_T_j, rho_j, phi, self.config_parameters)
         #log_likelihoods_CNV = poisson_ll_func_CNV(D_N_j, D_T_j, c_S, Lambda_S, rho_j, phi, self.config_parameters)
-        log_likelihoods = poisson_ll_func(b_T_j, d_T_j, c_S, D_N_j, D_T_j, Lambda_S, rho_j, phi, config_parameters)
+        #log_likelihoods = poisson_ll_func(b_T_j, d_T_j, c_S, D_N_j, D_T_j, Lambda_S, rho_j, phi, config_parameters)
 
         #xi_j = log_space_normalise_rows_annealing(log_likelihoods_LOH, eta)
         #psi_j = log_space_normalise_rows_annealing(log_likelihoods_CNV, eta)
-        psi_j = log_space_normalise_rows_annealing(log_likelihoods, eta)
+        #psi_j = log_space_normalise_rows_annealing(log_likelihoods, eta)
         
         #u_j = np.add.reduce(xi_j, axis = 0)
         #v_j = xi_j*np.dot(b_T_j.reshape(I_j, 1), np.ones((1, G)))
@@ -141,6 +141,61 @@ class PoissonLatentVariables(LatentVariables):
         #w_j = np.add.reduce(w_j, axis = 0)
         #
         #return psi_j, u_j, v_j, w_j
+        
+        return xi_j, psi_j
+
+    def _get_xi_by_segment(self, b_T_j, d_T_j, I_j, phi, eta):
+        C = self.config_parameters['copynumber_tumor_num']
+        G = self.config_parameters['genotypes_tumor_num']
+        c_N = np.array(constants.COPY_NUMBER_NORMAL)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
+        mu_N = np.array(constants.MU_N)
+        mu_T = np.array(self.config_parameters['MU_T'])
+        p_CG = self.config_parameters['P_CG']
+        eps = constants.EPS
+        
+        xi_j = np.zeros((I_j, C, G))
+        
+        for c in range(0, C):
+            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
+            xi_j[:, c, :] = log_space_normalise_rows_annealing(log_likelihoods, eta)
+        
+        xi_j += eps
+        
+        return xi_j
+    
+    def _get_kappa_by_segment(self, b_T_j, d_T_j, I_j, phi, xi_j, eta):
+        C = self.config_parameters['copynumber_tumor_num']
+        G = self.config_parameters['genotypes_tumor_num']
+        c_N = np.array(constants.COPY_NUMBER_NORMAL)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
+        mu_N = np.array(constants.MU_N)
+        mu_T = np.array(self.config_parameters['MU_T'])
+        
+        kappa_j = np.zeros(C)
+        
+        for c in range(0, C):
+            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            log_likelihoods = np.log(xi_j[:, c, :]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
+            temp = np.logaddexp.reduce(log_likelihoods, axis = 1)
+            kappa_j[c] = temp.sum()
+        
+        return kappa_j
+    
+    def _get_psi_by_segment(self, D_N_j, D_T_j, phi, rho_j, kappa_j, eta):
+        C = self.config_parameters['copynumber_tumor_num']
+        G = self.config_parameters['genotypes_tumor_num']
+        c_N = np.array(constants.COPY_NUMBER_NORMAL)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_S = self.restart_parameters['copy_number_base']
+        Lambda_S = self.data.segments.Lambda_S
+    
+        c_E_j = get_c_E(c_N, c_T, phi)
+        c_E_s = get_c_E(c_N, c_S, phi)
+        lambda_E_j = D_N_j*c_E_j*Lambda_S/c_E_s
+        log_likelihoods = np.log(rho_j) + log_poisson_likelihood(D_T_j, lambda_E_j) + kappa_j
+        psi_j = log_space_normalise_rows_annealing(log_likelihoods, eta)
         
         return psi_j
 

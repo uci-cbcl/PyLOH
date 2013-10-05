@@ -69,6 +69,10 @@ def get_genotypes_tumor(allele_number_max):
             genotypes_tumor.append(g_T)
     
     return genotypes_tumor
+
+def get_genotypes_tumor_num(allele_number_max):
+    
+    return (allele_number_max + 1)*(allele_number_max + 1)
     
 def get_alleletypes_tumor(allele_number_max):
     alleletypes_tumor = []
@@ -105,7 +109,7 @@ def get_copynumber_tumor(allele_number_max):
     
 def get_copynumber_tumor_num(allele_number_max):
     
-    return allele_number_max*2
+    return allele_number_max*2 + 1
 
 def get_MU_T(allele_number_max):
     empiri_BAF = constants.EMPIRI_BAF
@@ -129,9 +133,32 @@ def get_MU_T(allele_number_max):
     
     return MU_T
 
-def get_genotypes_tumor_num(allele_number_max):
+def get_P_CG(allele_number_max):
+    sigma = constants.SIGMA
     
-    return (allele_number_max + 1)*(allele_number_max + 1)
+    C = get_copynumber_tumor_num(allele_number_max)
+    G = get_genotypes_tumor_num(allele_number_max)
+    c_T = np.array(get_copynumber_tumor(allele_number_max))
+    g_T = get_genotypes_tumor(allele_number_max)
+    
+    P_CG = np.ones((C, G))*sigma
+    
+    for c in range(0, C):
+        if c_T[c] == 0:
+            P_CG[c, 0] = 1 - sigma*(G - 1)
+            continue
+        
+        compatible_num = 0
+        for g in range(0, G):
+            if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
+                compatible_num += 1
+                
+        for g in range(0, G):
+            if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
+                P_CG[c, g] = (1 - sigma*(G - compatible_num))/compatible_num
+    
+
+    return P_CG
 
 def get_omega(allele_number_max):
     G = get_genotypes_tumor_num(allele_number_max)
