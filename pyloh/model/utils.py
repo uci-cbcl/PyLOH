@@ -160,10 +160,17 @@ def get_P_CG(allele_number_max):
 
     return P_CG
 
+#def get_omega(allele_number_max):
+#    G = get_genotypes_tumor_num(allele_number_max)
+#    
+#    omega = [10 for i in range(0, G)]
+#    
+#    return omega
+
 def get_omega(allele_number_max):
-    G = get_genotypes_tumor_num(allele_number_max)
+    C = get_copynumber_tumor_num(allele_number_max)
     
-    omega = [10 for i in range(0, G)]
+    omega = [10 for i in range(0, C)]
     
     return omega
 

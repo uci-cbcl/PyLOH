@@ -207,86 +207,160 @@ class PoissonModelParameters(ModelParameters):
         self.sufficient_statistics = sufficient_statistics
         
         parameters = {}
-                
-        psi = sufficient_statistics['psi']
-        u = sufficient_statistics['u']
-        v = sufficient_statistics['v']
-        w = sufficient_statistics['w']
         
-        rho, rho_CNV, rho_LOH = self._update_rho(psi, u)
-        phi, phi_CNV, phi_LOH = self._update_phi(v, w, rho, rho_CNV, rho_LOH)
+        xi = sufficient_statistics['xi']
+        psi = sufficient_statistics['psi']
+        
+        rho = self._update_rho(psi)
+        phi = self._update_phi(xi, psi)
         
         parameters['rho'] = rho
-        parameters['rho_CNV'] = rho_CNV
-        parameters['rho_LOH'] = rho_LOH
         parameters['phi'] = phi
-        parameters['phi_CNV'] = phi_CNV
-        parameters['phi_LOH'] = phi_LOH
+        
+        #psi = sufficient_statistics['psi']
+        #u = sufficient_statistics['u']
+        #v = sufficient_statistics['v']
+        #w = sufficient_statistics['w']
+        
+        #rho, rho_CNV, rho_LOH = self._update_rho(psi, u)
+        #phi, phi_CNV, phi_LOH = self._update_phi(v, w, rho, rho_CNV, rho_LOH)
+        
+        #parameters['rho'] = rho
+        #parameters['rho_CNV'] = rho_CNV
+        #parameters['rho_LOH'] = rho_LOH
+        #parameters['phi'] = phi
+        #parameters['phi_CNV'] = phi_CNV
+        #parameters['phi_LOH'] = phi_LOH
         
         self.parameters = parameters
     
-    def _update_rho(self, psi, u):
+    def _update_rho(self, psi):
         x1 = constants.UPDATE_WEIGHTS['x1']
         y1 = constants.UPDATE_WEIGHTS['y1']
-        z1 = constants.UPDATE_WEIGHTS['z1']
         
-        J = self.data.seg_num
-        G = self.config_parameters['genotypes_tumor_num']
-        I = np.array(self.data.sites_num)
-        eps = constants.EPS
+        #J = self.data.seg_num
+        #G = self.config_parameters['genotypes_tumor_num']
+        #I = np.array(self.data.sites_num)
+        #eps = constants.EPS
+        #
+        #rho_CNV = psi
+        #
+        #rho_LOH = u/np.dot((I + eps).reshape(J, 1), np.ones((1, G)))
         
-        rho_CNV = psi
-        
-        rho_LOH = u/np.dot((I + eps).reshape(J, 1), np.ones((1, G)))
-        
+        rho_data = psi
         rho_priors = self._update_rho_by_priors()
         
-        rho = x1*rho_CNV + y1*rho_LOH + z1*rho_priors
+        rho = x1*rho_data + y1*rho_priors
         
-        return rho, rho_CNV, rho_LOH
+        return rho
     
-    def _update_phi(self, v, w, rho, rho_CNV, rho_LOH):
-        x2 = constants.UPDATE_WEIGHTS['x2']
-        y2 = constants.UPDATE_WEIGHTS['y2']
+    def _update_phi(self, xi, psi):
+        phi_range = constants.PHI_RANGE
+        
+        complete_ll_lst = []
+        
+        for phi in phi_range:
+            unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
+            complete_ll_lst.append(unnorm_complete_ll)
+            
+        complete_ll_lst = np.array(complete_ll_lst)
+        idx_phi_optimum = complete_ll_lst.argmax()
+        phi_optimum = phi_range[idx_phi_optimum]
+        
+        return phi_optimum
+    
+    def _complete_log_likelihood(self, phi, xi, psi):
+        J = self.data.seg_num
+        
+        complete_ll = 0
+        
+        for j in range(0, J):
+            complete_ll += self._complete_ll_CNV_by_segment(phi, psi[j], j)
+            complete_ll += self._complete_ll_LOH_by_segment(phi, xi[j], psi[j], j)
+        
+        return complete_ll
+    
+    def _complete_ll_CNV_by_segment(self, phi, psi_j, j):
+        C = self.config_parameters['copynumber_tumor_num']
+        G = self.config_parameters['genotypes_tumor_num']
+        c_N = np.array(constants.COPY_NUMBER_NORMAL)
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_S = self.restart_parameters['copy_number_base']
+        D_T_j = self.data.segments[j][5]
+        Lambda_S = self.data.segments.Lambda_S
+    
+        c_E_j = get_c_E(c_N, c_T, phi)
+        c_E_s = get_c_E(c_N, c_S, phi)
+        lambda_E_j = D_N_j*c_E_j*Lambda_S/c_E_s
+        
+        complete_ll_CNV_j = (psi_j*(D_T_j*np.log(lambda_E_j) - lambda_E_j)).sum()
+        
+        return complete_ll_CNV_j
+    
+    def _complete_ll_LOH_by_segment(self, phi, xi_j, psi_j, j):
+        C = self.config_parameters['copynumber_tumor_num']
+        G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(self.config_parameters['MU_T'])
-
-        J = self.data.seg_num
-        G = self.config_parameters['genotypes_tumor_num']
-        eps = constants.EPS
-
-        phi_CNV = np.zeros(J)
-        phi_LOH = np.zeros(J)
-        weights_CNV = np.zeros(J)
-        weights_LOH = np.zeros(J)
+        a_T_j = self.data.paired_counts[j][:, 2]
+        b_T_j = self.data.paired_counts[j][:, 3]
+        d_T_j = a_T_j + b_T_j
         
-        for j in range(0, J):
-            LOH_status_j = self.data.segments[j][7]
+        complete_ll_LOH_j = 0
+        
+        for c in range(0, C):
+            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            log_likelihoods = log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
+            log_likelihoods *= xi_j[:, c, :]
             
-            if LOH_status_j == 'NONE':
-                continue
-
-            D_N_j = self.data.segments[j][4]
-            D_T_j = self.data.segments[j][5]
-            mu_E_j = v[j]/(w[j] + eps)
-            
-            for g in range(0, G):
-                if mu_E_j[g] < min(mu_T):
-                    mu_E_j[g] = min(mu_T)
-                if mu_E_j[g] > max(mu_T):
-                    mu_E_j[g] = max(mu_T)
-            
-            phi_CNV[j], phi_LOH[j], weights_CNV[j], weights_LOH[j] = self._update_phi_by_segment(D_N_j, D_T_j, mu_E_j,
-                                                                                rho[j], rho_CNV[j], rho_LOH[j])
+            complete_ll_LOH_j += psi_j[c]*log_likelihoods.sum()
         
-        phi_CNV_mean = np.average(phi_CNV, weights = weights_CNV)
-        phi_LOH_mean = np.average(phi_LOH, weights = weights_LOH)
-        
-        phi = x2*phi_CNV_mean + y2*phi_LOH_mean
-        
-        return phi, phi_CNV_mean, phi_LOH_mean
+        return complete_ll_LOH_j
+    
+    #def _update_phi(self, v, w, rho, rho_CNV, rho_LOH):
+    #    x2 = constants.UPDATE_WEIGHTS['x2']
+    #    y2 = constants.UPDATE_WEIGHTS['y2']
+    #    c_N = np.array(constants.COPY_NUMBER_NORMAL)
+    #    c_T = np.array(self.config_parameters['copynumber_tumor'])
+    #    mu_N = np.array(constants.MU_N)
+    #    mu_T = np.array(self.config_parameters['MU_T'])
+    #
+    #    J = self.data.seg_num
+    #    G = self.config_parameters['genotypes_tumor_num']
+    #    eps = constants.EPS
+    #
+    #    phi_CNV = np.zeros(J)
+    #    phi_LOH = np.zeros(J)
+    #    weights_CNV = np.zeros(J)
+    #    weights_LOH = np.zeros(J)
+    #    
+    #    for j in range(0, J):
+    #        LOH_status_j = self.data.segments[j][7]
+    #        
+    #        if LOH_status_j == 'NONE':
+    #            continue
+    #
+    #        D_N_j = self.data.segments[j][4]
+    #        D_T_j = self.data.segments[j][5]
+    #        mu_E_j = v[j]/(w[j] + eps)
+    #        
+    #        for g in range(0, G):
+    #            if mu_E_j[g] < min(mu_T):
+    #                mu_E_j[g] = min(mu_T)
+    #            if mu_E_j[g] > max(mu_T):
+    #                mu_E_j[g] = max(mu_T)
+    #        
+    #        phi_CNV[j], phi_LOH[j], weights_CNV[j], weights_LOH[j] = self._update_phi_by_segment(D_N_j, D_T_j, mu_E_j,
+    #                                                                            rho[j], rho_CNV[j], rho_LOH[j])
+    #    
+    #    phi_CNV_mean = np.average(phi_CNV, weights = weights_CNV)
+    #    phi_LOH_mean = np.average(phi_LOH, weights = weights_LOH)
+    #    
+    #    phi = x2*phi_CNV_mean + y2*phi_LOH_mean
+    #    
+    #    return phi, phi_CNV_mean, phi_LOH_mean
 
     def _init_parameters(self):
         parameters = {}
@@ -294,21 +368,21 @@ class PoissonModelParameters(ModelParameters):
         phi_init = self.restart_parameters['phi_init']
         
         parameters['phi'] = phi_init
-        parameters['phi_CNV'] = phi_init
-        parameters['phi_LOH'] = phi_init
+        #parameters['phi_CNV'] = phi_init
+        #parameters['phi_LOH'] = phi_init
         parameters['rho'] = self._update_rho_by_priors()
-        parameters['rho_CNV'] = parameters['rho']
-        parameters['rho_LOH'] = parameters['rho']
+        #parameters['rho_CNV'] = parameters['rho']
+        #parameters['rho_LOH'] = parameters['rho']
         
         self.parameters = parameters
         
     def _update_rho_by_priors(self):
         J = self.data.seg_num
-        G = self.config_parameters['genotypes_tumor_num']
+        C = self.config_parameters['copynumber_tumor_num']
         
         omega = self.priors['omega']
         
-        rho = np.zeros((J, G))
+        rho = np.zeros((J, C))
         
         for j in range(0, J):
             rho[j] = omega/omega.sum()
