@@ -23,7 +23,7 @@ import numpy as np
 
 from pyloh import constants
 from pyloh.preprocess.data import Data
-from pyloh.model.utils import get_genotypes_tumor, get_genotypes_tumor_num
+from pyloh.model.utils import get_copynumber_tumor, get_copynumber_tumor_num
 
 class ProbabilisticModel(object):
     def __init__(self, allele_number_max):
@@ -171,11 +171,11 @@ class PriorParser(object):
         self.parser = ConfigParser()
         self.parser.read(priors_filename)
         
-        genotypes_tumor = get_genotypes_tumor(allele_number_max)
-        genotypes_tumor_num = get_genotypes_tumor_num(allele_number_max)
+        copynumber_tumor = get_copynumber_tumor(allele_number_max)
+        copynumber_tumor_num = get_copynumber_tumor_num(allele_number_max)
         
-        self.priors['omega'] = np.zeros(genotypes_tumor_num)
+        self.priors['omega'] = np.zeros(copynumber_tumor_num)
         
-        for i, genotype in enumerate(genotypes_tumor):
-            self.priors['omega'][i] = self.parser.getfloat('omega', genotype)
+        for i, copynumber in enumerate(copynumber_tumor):
+            self.priors['omega'][i] = self.parser.getfloat('omega', str(copynumber))
     

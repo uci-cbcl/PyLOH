@@ -43,8 +43,6 @@ def run_poisson_model(args):
     print "Optimum log-likelihood : ", log_likelihood_list[idx_restart_optimum]
     print "Optimum baseline copy number : ", c_S_optimum
     print "Maximum copy number of each allele : ", args.allele_number_max
-    print "Tumor purity by CNV : {0:.3f}".format(model_parameters_optimum.parameters['phi_CNV'])
-    print "Tumor purity by LOH : {0:.3f}".format(model_parameters_optimum.parameters['phi_LOH'])
-    print "Tumor purity combined : {0:.3f}".format(model_parameters_optimum.parameters['phi'])
+    print "Tumor purity : {0:.3f}".format(model_parameters_optimum.parameters['phi'])
     sys.stdout.flush()
     

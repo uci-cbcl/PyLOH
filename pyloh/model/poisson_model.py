@@ -63,15 +63,12 @@ class PoissonModelTrainer(ModelTrainer):
         print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
         print "Maximum copy number of each allele : ", allele_number_max
-        print "Initial tumor celluarity : ", phi_init
+        print "Initial tumor purity : ", phi_init
         print "Number of iterations : ", self.iters
         print "New log-likelihood : ", new_log_likelihood
         print "Old log-likelihood : ", old_log_likelihood 
         print "Log-likelihood change : ", ll_change
-        print "Parameters :"
-        print "Tumor purity by CNV : {0:.3f}".format(self.model_parameters.parameters['phi_CNV'])
-        print "Tumor purity by LOH : {0:.3f}".format(self.model_parameters.parameters['phi_LOH'])
-        print "Tumor purity combined : {0:.3f}".format(self.model_parameters.parameters['phi'])
+        print "Tumor purity : {0:.3f}".format(self.model_parameters.parameters['phi'])
         sys.stdout.flush()
         
 class PoissonLatentVariables(LatentVariables):
@@ -92,6 +89,7 @@ class PoissonLatentVariables(LatentVariables):
         sufficient_statistics = {}
         
         sufficient_statistics['xi'] = []
+        sufficient_statistics['kappa'] = np.zeros((J, C))
         sufficient_statistics['psi'] =  np.zeros((J, C))
         
         for j in range(0, J):
@@ -101,8 +99,9 @@ class PoissonLatentVariables(LatentVariables):
                 sufficient_statistics['xi'].append('NONE')
                 continue
                         
-            xi_j, psi_j = self._sufficient_statistics_by_segment(parameters, eta, j)
+            xi_j, kappa_j, psi_j = self._sufficient_statistics_by_segment(parameters, eta, j)
             sufficient_statistics['xi'].append(xi_j)
+            sufficient_statistics['kappa'][j, :] = kappa_j
             sufficient_statistics['psi'][j, :] = psi_j
             
         self.sufficient_statistics = sufficient_statistics
@@ -126,7 +125,7 @@ class PoissonLatentVariables(LatentVariables):
         
         psi_j = self._get_psi_by_segment(D_N_j, D_T_j, phi, rho_j, kappa_j, eta)
         
-        return xi_j, psi_j
+        return xi_j, kappa_j, psi_j
 
     def _get_xi_by_segment(self, b_T_j, d_T_j, I_j, phi, eta):
         C = self.config_parameters['copynumber_tumor_num']
@@ -318,9 +317,7 @@ class PoissonModelParameters(ModelParameters):
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
         outfile.write("Maximum copy number of each allele : {0}".format(allele_number_max) + '\n')
-        outfile.write("Tumor purity by CNV : {0:.3f}".format(self.parameters['phi_CNV']) + '\n')
-        outfile.write("Tumor purity by LOH : {0:.3f}".format(self.parameters['phi_LOH']) + '\n')
-        outfile.write("Tumor purity combined : {0:.3f}".format(self.parameters['phi']) + '\n')
+        outfile.write("Tumor purity : {0:.3f}".format(self.parameters['phi']) + '\n')
         
         outfile.close()
         
@@ -329,7 +326,7 @@ class PoissonModelParameters(ModelParameters):
 
         outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num',
                                  'tumor_reads_num', 'LOH_frec', 'LOH_status', 'log2_ratio',
-                                 'allele_type', 'copy_number']) + '\n')
+                                 'copy_number']) + '\n')
 
         J = self.data.seg_num
         
@@ -337,54 +334,26 @@ class PoissonModelParameters(ModelParameters):
             LOH_status_j = self.data.segments[j][7]
             
             if LOH_status_j == 'NONE':
-                allele_type_j = 'NONE'
                 copy_number_j = 'NONE'
             else:
-                allele_type_j = self._get_allele_type_by_segment(j)
                 copy_number_j = self._get_copy_number_by_segment(j)
                 
             segment_j = list(self.data.segments[j])
-            segment_j.extend([allele_type_j, copy_number_j])
+            segment_j.extend([copy_number_j])
             
             outfile.write('\t'.join(map(str, segment_j)) + '\n')
         
         outfile.close()
-        
-    def _get_allele_type_by_segment(self, j):
-        allele_types_tumor = self.config_parameters['alleletypes_tumor']
-        G = self.config_parameters['genotypes_tumor_num']
-        
-        psi_j = self.sufficient_statistics['psi'][j]
-        allele_types_prob = {}
-        
-        for g in range(0, G):
-            allele_type = allele_types_tumor[g]
-            if allele_type not in allele_types_prob.keys():
-                allele_types_prob[allele_type] = psi_j[g]
-            else:
-                allele_types_prob[allele_type] += psi_j[g]
-        
-        allele_type_max = max(allele_types_prob, key=allele_types_prob.get)
-        
-        return allele_type_max
 
     def _get_copy_number_by_segment(self, j):
-        copy_number_tumor = self.config_parameters['copynumber_tumor']
-        G = self.config_parameters['genotypes_tumor_num']
+        C = self.config_parameters['copynumber_tumor_num']
+        c_T = np.array(self.config_parameters['copynumber_tumor'])
         
         psi_j = self.sufficient_statistics['psi'][j]
-        copy_number_prob = {}
+        idx_c_T_max = psi_j.argmax()
+        c_T_max = c_T[idx_c_T_max]
         
-        for g in range(0, G):
-            copy_number = copy_number_tumor[g]
-            if copy_number not in copy_number_prob.keys():
-                copy_number_prob[copy_number] = psi_j[g]
-            else:
-                copy_number_prob[copy_number] += psi_j[g]
-        
-        copy_number_max = max(copy_number_prob, key=copy_number_prob.get)
-        
-        return copy_number_max
+        return c_T_max
 
 class PoissonModelLikelihood(ModelLikelihood):
     def __init__(self, data, restart_parameters, config_parameters):
@@ -421,6 +390,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         rho_j = parameters['rho'][j]
         phi = parameters['phi']
         p_CG = self.config_parameters['P_CG']
+        eps = constants.EPS
     
         c_E_j = get_c_E(c_N, c_T, phi)
         c_E_s = get_c_E(c_N, c_S, phi)
@@ -435,7 +405,9 @@ class PoissonModelLikelihood(ModelLikelihood):
         for c in range(0, C):
             mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
-            log_likelihoods = np.logaddexp.reduce(log_likelihoods, axis = 1)
+            xi_j_c = log_space_normalise_rows_annealing(log_likelihoods, 1) + eps
+            log_likelihoods = np.log(xi_j_c) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
+            log_likelihoods = np.logaddexp.reduce(log_likelihoods, axis = 1)            
             ll_LOH_j[c] = log_likelihoods.sum()
             
         #log-likelihood for CNV
