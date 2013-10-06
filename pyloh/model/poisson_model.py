@@ -286,6 +286,7 @@ class PoissonModelParameters(ModelParameters):
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
         c_S = self.restart_parameters['copy_number_base']
+        D_N_j = self.data.segments[j][4]
         D_T_j = self.data.segments[j][5]
         Lambda_S = self.data.segments.Lambda_S
     
@@ -389,50 +390,50 @@ class PoissonModelParameters(ModelParameters):
             
         return rho
     
-    def _update_phi_by_segment(self, D_N_j, D_T_j, mu_E_j, rho_j, rho_CNV_j, rho_LOH_j):
-        c_N = np.array(constants.COPY_NUMBER_NORMAL)
-        c_T = np.array(self.config_parameters['copynumber_tumor'])
-        mu_N = np.array(constants.MU_N)
-        mu_T = np.array(self.config_parameters['MU_T'])
-        eps = constants.EPS
-        
-        G = self.config_parameters['genotypes_tumor_num']
-        
-        c_S = self.restart_parameters['copy_number_base']
-        Lambda_S = self.data.segments.Lambda_S
-        
-        phi_CNV_j = 0
-        phi_LOH_j = 0
-        prob_sum_CNV_j = 0
-        prob_sum_LOH_j = 0
-         
-        for g in range(0, G):
-            phi_CNV_j_g = -1
-            phi_LOH_j_g = -1
-            
-            if c_N[0] != c_T[g]:
-                phi_CNV_j_g = get_phi_CNV(c_N[0], c_T[g], D_N_j, D_T_j, c_S, Lambda_S)
-            
-            if mu_N[0] != mu_T[g]:
-                phi_LOH_j_g = get_phi_LOH(mu_N[0], mu_T[g], mu_E_j[g], c_N[0], c_T[g])
-                
-            if phi_CNV_j_g >= 0 and phi_CNV_j_g <= 1:
-                phi_CNV_j = phi_CNV_j + rho_CNV_j[g]*phi_CNV_j_g
-                prob_sum_CNV_j = prob_sum_CNV_j + rho_CNV_j[g]
-                
-            if phi_LOH_j_g >= 0 and phi_LOH_j_g <= 1:
-                phi_LOH_j = phi_LOH_j + rho_LOH_j[g]*phi_LOH_j_g
-                prob_sum_LOH_j = prob_sum_LOH_j + rho_LOH_j[g]
-                
-        if prob_sum_CNV_j == 0:
-            prob_sum_CNV_j = eps
-        if prob_sum_LOH_j == 0:
-            prob_sum_LOH_j = eps
-        
-        phi_CNV_j = phi_CNV_j/prob_sum_CNV_j
-        phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
-                
-        return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
+    #def _update_phi_by_segment(self, D_N_j, D_T_j, mu_E_j, rho_j, rho_CNV_j, rho_LOH_j):
+    #    c_N = np.array(constants.COPY_NUMBER_NORMAL)
+    #    c_T = np.array(self.config_parameters['copynumber_tumor'])
+    #    mu_N = np.array(constants.MU_N)
+    #    mu_T = np.array(self.config_parameters['MU_T'])
+    #    eps = constants.EPS
+    #    
+    #    G = self.config_parameters['genotypes_tumor_num']
+    #    
+    #    c_S = self.restart_parameters['copy_number_base']
+    #    Lambda_S = self.data.segments.Lambda_S
+    #    
+    #    phi_CNV_j = 0
+    #    phi_LOH_j = 0
+    #    prob_sum_CNV_j = 0
+    #    prob_sum_LOH_j = 0
+    #     
+    #    for g in range(0, G):
+    #        phi_CNV_j_g = -1
+    #        phi_LOH_j_g = -1
+    #        
+    #        if c_N[0] != c_T[g]:
+    #            phi_CNV_j_g = get_phi_CNV(c_N[0], c_T[g], D_N_j, D_T_j, c_S, Lambda_S)
+    #        
+    #        if mu_N[0] != mu_T[g]:
+    #            phi_LOH_j_g = get_phi_LOH(mu_N[0], mu_T[g], mu_E_j[g], c_N[0], c_T[g])
+    #            
+    #        if phi_CNV_j_g >= 0 and phi_CNV_j_g <= 1:
+    #            phi_CNV_j = phi_CNV_j + rho_CNV_j[g]*phi_CNV_j_g
+    #            prob_sum_CNV_j = prob_sum_CNV_j + rho_CNV_j[g]
+    #            
+    #        if phi_LOH_j_g >= 0 and phi_LOH_j_g <= 1:
+    #            phi_LOH_j = phi_LOH_j + rho_LOH_j[g]*phi_LOH_j_g
+    #            prob_sum_LOH_j = prob_sum_LOH_j + rho_LOH_j[g]
+    #            
+    #    if prob_sum_CNV_j == 0:
+    #        prob_sum_CNV_j = eps
+    #    if prob_sum_LOH_j == 0:
+    #        prob_sum_LOH_j = eps
+    #    
+    #    phi_CNV_j = phi_CNV_j/prob_sum_CNV_j
+    #    phi_LOH_j = phi_LOH_j/prob_sum_LOH_j
+    #            
+    #    return (phi_CNV_j, phi_LOH_j, prob_sum_CNV_j, prob_sum_LOH_j)
     
     def write_parameters(self, filename_base):
         outpurity_file_name = filename_base + '.PyLOH.purity'
