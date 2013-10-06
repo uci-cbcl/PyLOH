@@ -214,17 +214,27 @@ class PoissonModelParameters(ModelParameters):
         return rho
     
     def _update_phi(self, xi, psi):
-        phi_range = constants.PHI_RANGE
-        
+        phi_range_1st = constants.PHI_RANGE
         complete_ll_lst = []
         
-        for phi in phi_range:
+        for phi in phi_range_1st:
             unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
             complete_ll_lst.append(unnorm_complete_ll)
             
         complete_ll_lst = np.array(complete_ll_lst)
         idx_phi_optimum = complete_ll_lst.argmax()
-        phi_optimum = phi_range[idx_phi_optimum]
+        phi_optimum = phi_range_1st[idx_phi_optimum]
+        
+        phi_range_2nd = get_phi_range_2nd(phi_optimum)
+        complete_ll_lst = []
+        
+        for phi in phi_range_2nd:
+            unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
+            complete_ll_lst.append(unnorm_complete_ll)
+            
+        complete_ll_lst = np.array(complete_ll_lst)
+        idx_phi_optimum = complete_ll_lst.argmax()
+        phi_optimum = phi_range_2nd[idx_phi_optimum]
         
         return phi_optimum
     

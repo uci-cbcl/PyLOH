@@ -199,3 +199,7 @@ def get_phi_CNV(c_N, c_T, D_N, D_T, c_S, Lambda_S):
 def get_phi_LOH(mu_N, mu_T, mu_E, c_N, c_T):
     
     return (mu_N - mu_E)*c_N/((mu_E - mu_T)*c_T + (mu_N - mu_E)*c_N)
+    
+def get_phi_range_2nd(phi):
+    
+    return np.arange(phi - 0.01, phi + 0.01, 0.001).tolist()
