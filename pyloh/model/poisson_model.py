@@ -244,6 +244,11 @@ class PoissonModelParameters(ModelParameters):
         complete_ll = 0
         
         for j in range(0, J):
+            LOH_status_j = self.data.segments[j][7]
+            
+            if LOH_status_j == 'NONE':
+                continue            
+
             complete_ll += self._complete_ll_CNV_by_segment(phi, psi[j], j)
             complete_ll += self._complete_ll_LOH_by_segment(phi, xi[j], psi[j], j)
         
