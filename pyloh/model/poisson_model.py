@@ -142,7 +142,6 @@ class PoissonLatentVariables(LatentVariables):
         xi_j = np.zeros((I_j, C, G))
         
         for c in range(0, C):
-            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             xi_j[:, c, :] = log_space_normalise_rows_annealing(log_likelihoods, eta)
         
@@ -163,7 +162,6 @@ class PoissonLatentVariables(LatentVariables):
         kappa_j = np.zeros(C)
         
         for c in range(0, C):
-            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(xi_j[:, c, :]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             temp = np.logaddexp.reduce(log_likelihoods, axis = 1)
             kappa_j[c] = temp.sum()
@@ -220,7 +218,7 @@ class PoissonModelParameters(ModelParameters):
     def _update_phi(self, xi, psi):
         phi_start = 0.01
         phi_end = 0.99
-        phi_stop = 1e-6
+        phi_stop = 1e-5
         phi_change = 1
         
         while phi_change > phi_stop:
@@ -314,7 +312,6 @@ class PoissonModelParameters(ModelParameters):
         complete_ll_LOH_j = 0
         
         for c in range(0, C):
-            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             log_likelihoods *= xi_j[:, c, :]
             
@@ -448,10 +445,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         ll_LOH_j = np.zeros(C)
         
         for c in range(0, C):
-            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
-            #xi_j_c = log_space_normalise_rows_annealing(log_likelihoods, 1) + eps
-            #log_likelihoods = np.log(xi_j_c) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             log_likelihoods = np.logaddexp.reduce(log_likelihoods, axis = 1)            
             ll_LOH_j[c] = log_likelihoods.sum()
             

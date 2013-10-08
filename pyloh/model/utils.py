@@ -143,12 +143,22 @@ def get_P_CG(copynumber_max):
         if c_T[c] == 0:
             P_CG[c, 0] = 1 - sigma*(G - 1)
             continue
+    
+        if c_T[c]%2 == 0:
+            compatible_num = 1
+            for g in range(0, G):
+                A_num = g_T[g].count('A')
+                B_num = g_T[g].count('B')
+                if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL' and A_num == B_num:
+                    P_CG[c, g] = (1 - sigma*(G - compatible_num))/compatible_num
+            
+            continue
         
         compatible_num = 0
         for g in range(0, G):
             if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
                 compatible_num += 1
-                
+                        
         for g in range(0, G):
             if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
                 P_CG[c, g] = (1 - sigma*(G - compatible_num))/compatible_num
