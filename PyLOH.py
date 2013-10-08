@@ -69,8 +69,8 @@ parser_run_model = subparsers.add_parser('run_model',
 parser_run_model.add_argument('filename_base',
                             help='Base name of preprocessed files created.')
 
-parser_run_model.add_argument('--allele_number_max', default=2, type=int,
-                            help='''Maximum copy number of each allele allows to take. Default is 2.''')
+parser_run_model.add_argument('--copynumber_max', default=4, type=int,
+                            help='''Maximum copy number of each segment allows to take. Default is 4.''')
 
 parser_run_model.add_argument('--priors', default=None, type=str,
                              help='''File of the prior distribution. If not provided,

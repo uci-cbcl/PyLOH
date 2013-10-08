@@ -13,27 +13,28 @@ from pyloh.model.model_base import *
 from pyloh.model.utils import *
 
 class PoissonProbabilisticModel(ProbabilisticModel):
-    def __init__(self, allele_number_max):
-        ProbabilisticModel.__init__(self, allele_number_max)
+    def __init__(self, copynumber_max):
+        ProbabilisticModel.__init__(self, copynumber_max)
 
     def read_priors(self, priors_filename):
         if priors_filename != None:
-            self.priors_parser.read_priors(priors_filename, self.allele_number_max)
+            self.priors_parser.read_priors(priors_filename, self.copynumber_max)
             self.priors = self.priors_parser.priors
         else:
             self.priors = {}
-            self.priors['omega'] = np.array(get_omega(self.allele_number_max))*1.0
+            self.priors['omega'] = np.array(get_omega(self.copynumber_max))*1.0
 
     def preprocess(self):
         config_parameters = {}
-        config_parameters['allele_number_max'] = self.allele_number_max
-        config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.allele_number_max)
-        config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.allele_number_max)
-        config_parameters['alleletypes_tumor'] = get_alleletypes_tumor(self.allele_number_max)
-        config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.allele_number_max)
-        config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.allele_number_max)
-        config_parameters['MU_T'] = get_MU_T(self.allele_number_max)
-        config_parameters['P_CG'] = get_P_CG(self.allele_number_max)
+        config_parameters['copynumber_max'] = self.copynumber_max
+        config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.copynumber_max)
+        config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.copynumber_max)
+        #config_parameters['alleletypes_tumor'] = get_alleletypes_tumor(self.copynumber_max)
+        config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.copynumber_max)
+        config_parameters['copynumber_tumor_compat'] = get_copynumber_tumor_compat(self.copynumber_max)
+        config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.copynumber_max)
+        config_parameters['MU_T'] = get_MU_T(self.copynumber_max)
+        config_parameters['P_CG'] = get_P_CG(self.copynumber_max)
         
         self.config_parameters = config_parameters
         self.data.segments.compute_Lambda_S()
@@ -55,14 +56,14 @@ class PoissonModelTrainer(ModelTrainer):
     def _print_running_info(self, new_log_likelihood, old_log_likelihood, ll_change):
         c_S = self.restart_parameters['copy_number_base']
         phi_init = self.restart_parameters['phi_init']
-        allele_number_max = self.config_parameters['allele_number_max']
+        copynumber_max = self.config_parameters['copynumber_max']
         
         print "#" * 100
         print "# Running Info."
         print "#" * 100
         print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
-        print "Maximum copy number of each allele : ", allele_number_max
+        print "Maximum copy number of each segment : ", copynumber_max
         print "Initial tumor purity : ", phi_init
         print "Number of iterations : ", self.iters
         print "New log-likelihood : ", new_log_likelihood
@@ -132,15 +133,17 @@ class PoissonLatentVariables(LatentVariables):
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_gT = np.array(self.config_parameters['copynumber_tumor_compat'])
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(self.config_parameters['MU_T'])
+        mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_gT, phi)
         p_CG = self.config_parameters['P_CG']
         eps = constants.EPS
         
         xi_j = np.zeros((I_j, C, G))
         
         for c in range(0, C):
-            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             xi_j[:, c, :] = log_space_normalise_rows_annealing(log_likelihoods, eta)
         
@@ -153,13 +156,15 @@ class PoissonLatentVariables(LatentVariables):
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_gT = np.array(self.config_parameters['copynumber_tumor_compat'])
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(self.config_parameters['MU_T'])
+        mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_gT, phi)
         
         kappa_j = np.zeros(C)
         
         for c in range(0, C):
-            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(xi_j[:, c, :]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             temp = np.logaddexp.reduce(log_likelihoods, axis = 1)
             kappa_j[c] = temp.sum()
@@ -277,8 +282,10 @@ class PoissonModelParameters(ModelParameters):
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_gT = np.array(self.config_parameters['copynumber_tumor_compat'])
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(self.config_parameters['MU_T'])
+        mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_gT, phi)
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
         d_T_j = a_T_j + b_T_j
@@ -286,7 +293,7 @@ class PoissonModelParameters(ModelParameters):
         complete_ll_LOH_j = 0
         
         for c in range(0, C):
-            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             log_likelihoods *= xi_j[:, c, :]
             
@@ -328,10 +335,10 @@ class PoissonModelParameters(ModelParameters):
         outfile = open(outpurity_file_name, 'w')
         
         c_S = self.restart_parameters['copy_number_base']
-        allele_number_max = self.config_parameters['allele_number_max']
+        copynumber_max = self.config_parameters['copynumber_max']
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
-        outfile.write("Maximum copy number of each allele : {0}".format(allele_number_max) + '\n')
+        outfile.write("Maximum copy number of each segment : {0}".format(copynumber_max) + '\n')
         outfile.write("Tumor purity : {0:.3f}".format(self.parameters['phi']) + '\n')
         
         outfile.close()
@@ -395,6 +402,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
         c_T = np.array(self.config_parameters['copynumber_tumor'])
+        c_gT = np.array(self.config_parameters['copynumber_tumor_compat'])
         c_S = self.restart_parameters['copy_number_base']
         a_T_j = self.data.paired_counts[j][:, 2]
         b_T_j = self.data.paired_counts[j][:, 3]
@@ -413,15 +421,16 @@ class PoissonModelLikelihood(ModelLikelihood):
         
         mu_N = np.array(constants.MU_N)
         mu_T = np.array(self.config_parameters['MU_T'])
+        mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_gT, phi)
 
         #log-likelihood for LOH
         ll_LOH_j = np.zeros(C)
         
         for c in range(0, C):
-            mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
+            #mu_E_c = get_mu_E(mu_N, mu_T, c_N, c_T[c], phi)
             log_likelihoods = np.log(p_CG[c]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
-            xi_j_c = log_space_normalise_rows_annealing(log_likelihoods, 1) + eps
-            log_likelihoods = np.log(xi_j_c) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
+            #xi_j_c = log_space_normalise_rows_annealing(log_likelihoods, 1) + eps
+            #log_likelihoods = np.log(xi_j_c) + log_binomial_likelihood(b_T_j, d_T_j, mu_E_c)
             log_likelihoods = np.logaddexp.reduce(log_likelihoods, axis = 1)            
             ll_LOH_j[c] = log_likelihoods.sum()
             
