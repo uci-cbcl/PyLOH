@@ -29,7 +29,6 @@ class PoissonProbabilisticModel(ProbabilisticModel):
         config_parameters['copynumber_max'] = self.copynumber_max
         config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.copynumber_max)
         config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.copynumber_max)
-        #config_parameters['alleletypes_tumor'] = get_alleletypes_tumor(self.copynumber_max)
         config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.copynumber_max)
         config_parameters['copynumber_tumor_compat'] = get_copynumber_tumor_compat(self.copynumber_max)
         config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.copynumber_max)
@@ -219,27 +218,49 @@ class PoissonModelParameters(ModelParameters):
         return rho
     
     def _update_phi(self, xi, psi):
-        phi_range_1st = constants.PHI_RANGE
-        complete_ll_lst = []
+        phi_start = 0.01
+        phi_end = 0.99
+        phi_stop = 1e-6
+        phi_change = 1
         
-        for phi in phi_range_1st:
-            unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
-            complete_ll_lst.append(unnorm_complete_ll)
+        while phi_change > phi_stop:
+            phi_left = phi_start + (phi_end - phi_start)*1/3
+            phi_right = phi_start + (phi_end - phi_start)*2/3
             
-        complete_ll_lst = np.array(complete_ll_lst)
-        idx_phi_optimum = complete_ll_lst.argmax()
-        phi_optimum = phi_range_1st[idx_phi_optimum]
-        
-        phi_range_2nd = get_phi_range_2nd(phi_optimum)
-        complete_ll_lst = []
-        
-        for phi in phi_range_2nd:
-            unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
-            complete_ll_lst.append(unnorm_complete_ll)
+            unnorm_complete_ll_left = self._complete_log_likelihood(phi_left, xi, psi)
+            unnorm_complete_ll_right = self._complete_log_likelihood(phi_right, xi, psi)
             
-        complete_ll_lst = np.array(complete_ll_lst)
-        idx_phi_optimum = complete_ll_lst.argmax()
-        phi_optimum = phi_range_2nd[idx_phi_optimum]
+            if unnorm_complete_ll_left >= unnorm_complete_ll_right:
+                phi_change = phi_end - phi_right
+                phi_end = phi_right
+            else:
+                phi_change = phi_left - phi_start
+                phi_start = phi_left
+                            
+        phi_optimum = (phi_start + phi_end)/2  
+        
+        
+        #phi_range_1st = constants.PHI_RANGE
+        #complete_ll_lst = []
+        #
+        #for phi in phi_range_1st:
+        #    unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
+        #    complete_ll_lst.append(unnorm_complete_ll)
+        #    
+        #complete_ll_lst = np.array(complete_ll_lst)
+        #idx_phi_optimum = complete_ll_lst.argmax()
+        #phi_optimum = phi_range_1st[idx_phi_optimum]
+        #
+        #phi_range_2nd = get_phi_range_2nd(phi_optimum)
+        #complete_ll_lst = []
+        #
+        #for phi in phi_range_2nd:
+        #    unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
+        #    complete_ll_lst.append(unnorm_complete_ll)
+        #    
+        #complete_ll_lst = np.array(complete_ll_lst)
+        #idx_phi_optimum = complete_ll_lst.argmax()
+        #phi_optimum = phi_range_2nd[idx_phi_optimum]
         
         return phi_optimum
     
