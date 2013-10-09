@@ -26,8 +26,8 @@ from pyloh.preprocess.data import Data
 from pyloh.model.utils import get_copynumber_tumor, get_copynumber_tumor_num
 
 class ProbabilisticModel(object):
-    def __init__(self, copynumber_max):
-        self.copynumber_max = copynumber_max
+    def __init__(self, allelenumber_max):
+        self.allelenumber_max = allelenumber_max
         self.priors_parser = PriorParser()
         self.data = Data()
         self._init_components()
@@ -167,12 +167,12 @@ class PriorParser(object):
     def __init__(self):                
         self.priors = {}
         
-    def read_priors(self, priors_filename, copynumber_max):                
+    def read_priors(self, priors_filename, allelenumber_max):                
         self.parser = ConfigParser()
         self.parser.read(priors_filename)
         
-        copynumber_tumor = get_copynumber_tumor(copynumber_max)
-        copynumber_tumor_num = get_copynumber_tumor_num(copynumber_max)
+        copynumber_tumor = get_copynumber_tumor(allelenumber_max)
+        copynumber_tumor_num = get_copynumber_tumor_num(allelenumber_max)
         
         self.priors['omega'] = np.zeros(copynumber_tumor_num)
         

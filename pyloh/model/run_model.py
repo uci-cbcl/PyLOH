@@ -16,7 +16,7 @@ def run_poisson_model(args):
     restart_parameters_list = poisson_restart_parameters_list()
     restart_num = len(restart_parameters_list)
     
-    model = PoissonProbabilisticModel(args.copynumber_max)
+    model = PoissonProbabilisticModel(args.allelenumber_max)
     model.read_priors(args.priors)
     model.read_data(args.filename_base)
     model.preprocess()
@@ -42,7 +42,7 @@ def run_poisson_model(args):
     print "*" * 100
     print "Optimum log-likelihood : ", log_likelihood_list[idx_restart_optimum]
     print "Optimum baseline copy number : ", c_S_optimum
-    print "Maximum copy number of each segment : ", args.copynumber_max
+    print "Maximum copy number of each allele : ", args.allelenumber_max
     print "Tumor purity : {0:.3f}".format(model_parameters_optimum.parameters['phi'])
     sys.stdout.flush()
     

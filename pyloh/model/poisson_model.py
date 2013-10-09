@@ -13,27 +13,27 @@ from pyloh.model.model_base import *
 from pyloh.model.utils import *
 
 class PoissonProbabilisticModel(ProbabilisticModel):
-    def __init__(self, copynumber_max):
-        ProbabilisticModel.__init__(self, copynumber_max)
+    def __init__(self, allelenumber_max):
+        ProbabilisticModel.__init__(self, allelenumber_max)
 
     def read_priors(self, priors_filename):
         if priors_filename != None:
-            self.priors_parser.read_priors(priors_filename, self.copynumber_max)
+            self.priors_parser.read_priors(priors_filename, self.allelenumber_max)
             self.priors = self.priors_parser.priors
         else:
             self.priors = {}
-            self.priors['omega'] = np.array(get_omega(self.copynumber_max))*1.0
+            self.priors['omega'] = np.array(get_omega(self.allelenumber_max))*1.0
 
     def preprocess(self):
         config_parameters = {}
-        config_parameters['copynumber_max'] = self.copynumber_max
-        config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.copynumber_max)
-        config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.copynumber_max)
-        config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.copynumber_max)
-        config_parameters['copynumber_tumor_compat'] = get_copynumber_tumor_compat(self.copynumber_max)
-        config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.copynumber_max)
-        config_parameters['MU_T'] = get_MU_T(self.copynumber_max)
-        config_parameters['P_CG'] = get_P_CG(self.copynumber_max)
+        config_parameters['allelenumber_max'] = self.allelenumber_max
+        config_parameters['genotypes_tumor'] =  get_genotypes_tumor(self.allelenumber_max)
+        config_parameters['genotypes_tumor_num'] = get_genotypes_tumor_num(self.allelenumber_max)
+        config_parameters['copynumber_tumor'] = get_copynumber_tumor(self.allelenumber_max)
+        config_parameters['copynumber_tumor_compat'] = get_copynumber_tumor_compat(self.allelenumber_max)
+        config_parameters['copynumber_tumor_num'] = get_copynumber_tumor_num(self.allelenumber_max)
+        config_parameters['MU_T'] = get_MU_T(self.allelenumber_max)
+        config_parameters['P_CG'] = get_P_CG(self.allelenumber_max)
         
         self.config_parameters = config_parameters
         self.data.segments.compute_Lambda_S()
@@ -55,14 +55,14 @@ class PoissonModelTrainer(ModelTrainer):
     def _print_running_info(self, new_log_likelihood, old_log_likelihood, ll_change):
         c_S = self.restart_parameters['copy_number_base']
         phi_init = self.restart_parameters['phi_init']
-        copynumber_max = self.config_parameters['copynumber_max']
+        allelenumber_max = self.config_parameters['allelenumber_max']
         
         print "#" * 100
         print "# Running Info."
         print "#" * 100
         print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
-        print "Maximum copy number of each segment : ", copynumber_max
+        print "Maximum copy number of each allele : ", allelenumber_max
         print "Initial tumor purity : ", phi_init
         print "Number of iterations : ", self.iters
         print "New log-likelihood : ", new_log_likelihood
@@ -237,29 +237,6 @@ class PoissonModelParameters(ModelParameters):
                             
         phi_optimum = (phi_start + phi_end)/2  
         
-        
-        #phi_range_1st = constants.PHI_RANGE
-        #complete_ll_lst = []
-        #
-        #for phi in phi_range_1st:
-        #    unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
-        #    complete_ll_lst.append(unnorm_complete_ll)
-        #    
-        #complete_ll_lst = np.array(complete_ll_lst)
-        #idx_phi_optimum = complete_ll_lst.argmax()
-        #phi_optimum = phi_range_1st[idx_phi_optimum]
-        #
-        #phi_range_2nd = get_phi_range_2nd(phi_optimum)
-        #complete_ll_lst = []
-        #
-        #for phi in phi_range_2nd:
-        #    unnorm_complete_ll = self._complete_log_likelihood(phi, xi, psi)
-        #    complete_ll_lst.append(unnorm_complete_ll)
-        #    
-        #complete_ll_lst = np.array(complete_ll_lst)
-        #idx_phi_optimum = complete_ll_lst.argmax()
-        #phi_optimum = phi_range_2nd[idx_phi_optimum]
-        
         return phi_optimum
     
     def _complete_log_likelihood(self, phi, xi, psi):
@@ -353,10 +330,10 @@ class PoissonModelParameters(ModelParameters):
         outfile = open(outpurity_file_name, 'w')
         
         c_S = self.restart_parameters['copy_number_base']
-        copynumber_max = self.config_parameters['copynumber_max']
+        allelenumber_max = self.config_parameters['allelenumber_max']
         
         outfile.write("Optimum baseline copy number : {0}".format(c_S) + '\n')
-        outfile.write("Maximum copy number of each segment : {0}".format(copynumber_max) + '\n')
+        outfile.write("Maximum copy number of each allele : {0}".format(allelenumber_max) + '\n')
         outfile.write("Tumor purity : {0:.3f}".format(self.parameters['phi']) + '\n')
         
         outfile.close()
