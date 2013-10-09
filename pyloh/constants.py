@@ -22,7 +22,7 @@ ETA = 1.01
 BURN_IN = 10
 EPS = np.finfo(float).eps
 
-SIGMA = 0.01
+SIGMA = 0.001
 ERR = 0.01
 EMPIRI_BAF = 0.485
 EMPIRI_AAF = 1 - EMPIRI_BAF
