@@ -272,26 +272,48 @@ def get_P_CG(allelenumber_max):
     
     return P_CG
 
-#def get_omega(allelenumber_max):
-#    C = get_copynumber_tumor_num(allelenumber_max)
-#    
-#    omega = [10 for i in range(0, C)]
-#    
-#    return omega
+def get_genotype_edit_distance(g_x, g_y):
+    A_num_x = g_x.count('A')
+    B_num_x = g_x.count('B')
+    A_num_y = g_y.count('A')
+    B_num_y = g_y.count('B')
+    
+    edit_distance = np.abs(A_num_x - A_num_y) + np.abs(B_num_x - B_num_y)
+    
+    return edit_distance
 
 def get_omega(allelenumber_max):
     tau = constants.TAU
+    alpha = constants.ALPHA
+    g_N = constants.GENOTYPES_NORMAL[0]
     
     c_gT = get_copynumber_tumor_compat(allelenumber_max)
-    c_T = get_copynumber_tumor(allelenumber_max)
+    g_T = get_genotypes_tumor(allelenumber_max)
+    C = get_copynumber_tumor_num(allelenumber_max)
+    G = get_genotypes_tumor_num(allelenumber_max)
     
-    omega = []
+    omega = np.zeros(C)
     
-    for c in c_T:
-        omega_c = c_gT.count(c)*tau
-        omega.append(omega_c)
+    for g in range(0, G):        
+        ed_genotype = get_genotype_edit_distance(g_T[g], g_N)
+        c = c_gT[g]
+        omega[c] += np.power(alpha, ed_genotype)*tau
             
     return omega
+
+#def get_omega(allelenumber_max):
+#    tau = constants.TAU
+#    
+#    c_gT = get_copynumber_tumor_compat(allelenumber_max)
+#    c_T = get_copynumber_tumor(allelenumber_max)
+#    
+#    omega = []
+#    
+#    for c in c_T:
+#        omega_c = c_gT.count(c)*tau
+#        omega.append(omega_c)
+#            
+#    return omega
 
 def get_x_E(x_N, x_T, phi):
     
