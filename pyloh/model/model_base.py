@@ -82,14 +82,15 @@ class ModelTrainer(object):
         converged = False
         
         parameters = self.model_parameters.parameters
-        old_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
+        priors = self.priors
+        old_log_likelihood = self.model_likelihood.get_log_likelihood(parameters, priors)
   
         while converged == False:
             self._E_step()
             self._M_step()
 
             parameters = self.model_parameters.parameters
-            new_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
+            new_log_likelihood = self.model_likelihood.get_log_likelihood(parameters, priors)
             
             if self.iters > 0:
                 ll_change = (new_log_likelihood - old_log_likelihood) / np.abs(old_log_likelihood)
@@ -159,7 +160,7 @@ class ModelLikelihood(object):
         self.restart_parameters = restart_parameters
         self.config_parameters = config_parameters
         
-    def get_log_likelihood(self, parameters):
+    def get_log_likelihood(self, parameters, priors):
         raise NotImplemented
     
 #JointSNVMix        

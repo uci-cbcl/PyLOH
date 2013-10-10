@@ -50,20 +50,10 @@ def log_binomial_likelihood(k, n, mu):
     
     return k * np.log(mu) + (n - k) * np.log(1 - mu)
 
-#JointSNVMix
 def log_dirichlet_pdf(x, omega):
-    if omega.ndim == 1: 
-        log_normalisation_constant = gammaln(omega.sum()) - gammaln(omega).sum()
     
-        log_likelihood = np.sum((omega - 1) * np.log(x))
-    else:
-        log_normalisation_constant = gammaln(omega.sum(axis=1)) - gammaln(omega).sum(axis=1)
-    
-        log_likelihood = np.sum((omega - 1) * np.log(x), axis=1)
+    return np.sum((omega - 1) * np.log(x) - gammaln(omega)) + gammaln(np.sum(omega))
 
-    log_p = log_normalisation_constant + log_likelihood
-
-    return log_p
 
 def log_poisson_likelihood(k, Lambda):
     row_shape = (1, Lambda.size)
@@ -282,11 +272,25 @@ def get_P_CG(allelenumber_max):
     
     return P_CG
 
+#def get_omega(allelenumber_max):
+#    C = get_copynumber_tumor_num(allelenumber_max)
+#    
+#    omega = [10 for i in range(0, C)]
+#    
+#    return omega
+
 def get_omega(allelenumber_max):
-    C = get_copynumber_tumor_num(allelenumber_max)
+    tau = constants.TAU
     
-    omega = [10 for i in range(0, C)]
+    c_gT = get_copynumber_tumor_compat(allelenumber_max)
+    c_T = get_copynumber_tumor(allelenumber_max)
     
+    omega = []
+    
+    for c in c_T:
+        omega_c = c_gT.count(c)*tau
+        omega.append(omega_c)
+            
     return omega
 
 def get_x_E(x_N, x_T, phi):

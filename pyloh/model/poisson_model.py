@@ -376,7 +376,7 @@ class PoissonModelLikelihood(ModelLikelihood):
     def __init__(self, data, restart_parameters, config_parameters):
         ModelLikelihood.__init__(self, data, restart_parameters, config_parameters)
     
-    def get_log_likelihood(self, parameters):
+    def get_log_likelihood(self, parameters, priors):
         J = self.data.seg_num
         
         log_likelihood = 0
@@ -387,12 +387,12 @@ class PoissonModelLikelihood(ModelLikelihood):
             if LOH_status_j == 'NONE':
                 continue
             
-            log_likelihood_j = self._get_log_likelihood_by_segment(parameters, j)
+            log_likelihood_j = self._get_log_likelihood_by_segment(parameters, priors, j)
             log_likelihood += log_likelihood_j
-            
+        
         return log_likelihood
     
-    def _get_log_likelihood_by_segment(self, parameters, j):
+    def _get_log_likelihood_by_segment(self, parameters, priors, j):
         C = self.config_parameters['copynumber_tumor_num']
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
@@ -407,6 +407,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         Lambda_S = self.data.segments.Lambda_S
         rho_j = parameters['rho'][j]
         phi = parameters['phi']
+        omega = priors['omega']
         p_CG = self.config_parameters['P_CG']
         eps = constants.EPS
     
@@ -432,6 +433,8 @@ class PoissonModelLikelihood(ModelLikelihood):
         ll_j = np.log(rho_j) + ll_LOH_j + ll_CNV_j
         
         ll_j = np.logaddexp.reduce(ll_j, axis = 1)[0]
+        
+        ll_j = ll_j + log_dirichlet_pdf(rho_j, omega)
         
         return ll_j
     
