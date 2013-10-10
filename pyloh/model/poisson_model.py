@@ -434,6 +434,7 @@ class PoissonModelLikelihood(ModelLikelihood):
         
         ll_j = np.logaddexp.reduce(ll_j, axis = 1)[0]
         
+        #Dirichlet priors for each segment
         ll_j = ll_j + log_dirichlet_pdf(rho_j, omega)
         
         return ll_j
@@ -442,51 +443,7 @@ class PoissonModelLikelihood(ModelLikelihood):
 #===============================================================================
 # Function
 #===============================================================================
-#def poisson_ll_func(b_T, d_T, c_S, D_N, D_T, Lambda_S, rho, phi, config_parameters):
-#    I = d_T.shape[0]
-#    c_N = np.array(constants.COPY_NUMBER_NORMAL)
-#    c_T = np.array(config_parameters['copynumber_tumor'])
-#    mu_N = np.array(constants.MU_N)
-#    mu_T = np.array(config_parameters['MU_T'])
-#    c_E_j = get_c_E(c_N, c_T, phi)
-#    c_E_s = get_c_E(c_N, c_S, phi)
-#    
-#    lambda_E = D_N*c_E_j*Lambda_S/c_E_s
-#    
-#    mu_E = get_mu_E(mu_N, mu_T, c_N, c_T, phi)
-#        
-#    log_likelihoods = np.log(rho) + log_poisson_likelihood(D_T, lambda_E) \
-#    + np.add.reduce(log_binomial_likelihood(b_T, d_T, mu_E), axis = 0)
-#    
-#    return log_likelihoods
-#
-#def poisson_ll_func_LOH(b_T, d_T, rho, phi, config_parameters):
-#    I = d_T.shape[0]
-#    c_N = np.array(constants.COPY_NUMBER_NORMAL)
-#    c_T = np.array(config_parameters['copynumber_tumor'])
-#    mu_N = np.array(constants.MU_N)
-#    mu_T = np.array(config_parameters['MU_T'])
-#    
-#    mu_E = get_mu_E(mu_N, mu_T, c_N, c_T, phi)
-#        
-#    log_likelihoods = np.log(rho) + log_binomial_likelihood(b_T, d_T, mu_E)
-#    
-#    return log_likelihoods
-#    
-#def poisson_ll_func_CNV(D_N, D_T, c_S, Lambda_S, rho, phi, config_parameters):
-#    c_N = np.array(constants.COPY_NUMBER_NORMAL)
-#    c_T = np.array(config_parameters['copynumber_tumor'])
-#    c_S = np.array(c_S)
-#    
-#    c_E_j = get_c_E(c_N, c_T, phi)
-#    c_E_S = get_c_E(c_N, c_S, phi)
-#    
-#    lambda_E = D_N*c_E_j*Lambda_S/c_E_S
-#    
-#    log_likelihoods = np.log(rho) + log_poisson_likelihood(D_T, lambda_E)
-#    
-#    return log_likelihoods
-    
+   
 def poisson_restart_parameters_list():
     restart_parameters_list = []
     

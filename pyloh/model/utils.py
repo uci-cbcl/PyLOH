@@ -54,128 +54,12 @@ def log_dirichlet_pdf(x, omega):
     
     return np.sum((omega - 1) * np.log(x) - gammaln(omega)) + gammaln(np.sum(omega))
 
-
 def log_poisson_likelihood(k, Lambda):
     row_shape = (1, Lambda.size)
     Lambda = Lambda.reshape(row_shape)
     
     return k * np.log(Lambda) - Lambda - gammaln(k + 1)
 
-
-
-
-#def get_copynumber_tumor(copynumber_max):
-#    
-#    return range(0, copynumber_max + 1)
-#
-#def get_copynumber_tumor_num(copynumber_max):
-#    
-#    return copynumber_max + 1
-
-#def get_genotypes_tumor(copynumber_max):
-#    genotypes_tumor = []
-#    
-#    C_T = get_copynumber_tumor(copynumber_max)
-#    
-#    for c in C_T:
-#        for B_num in range(0, c+1):
-#            A_num = c - B_num
-#            
-#            if A_num == 0 and B_num == 0:
-#                g_T = 'NULL'
-#            else:
-#                g_T = 'A'*A_num + 'B'*B_num
-#                
-#            genotypes_tumor.append(g_T)
-#    
-#    return genotypes_tumor
-#
-#def get_genotypes_tumor_num(copynumber_max):
-#    
-#    return len(get_genotypes_tumor(copynumber_max))
-
-#def get_copynumber_tumor_compat(copynumber_max):
-#    copynumber_tumor_compat = []
-#    
-#    C_T = get_copynumber_tumor(copynumber_max)
-#    
-#    for c in C_T:
-#        for B_num in range(0, c+1):
-#            A_num = c - B_num
-#            
-#            c_gT = A_num + B_num
-#                
-#            copynumber_tumor_compat.append(c_gT)
-#    
-#    return copynumber_tumor_compat
-
-#def get_MU_T(copynumber_max):
-#    empiri_BAF = constants.EMPIRI_BAF
-#    empiri_AAF = constants.EMPIRI_AAF
-#    err = constants.ERR
-#    
-#    MU_T = []
-#    C_T = get_copynumber_tumor(copynumber_max)
-#    
-#    for c in C_T:
-#        for B_num in range(0, c+1):
-#            A_num = c - B_num
-#            
-#            if A_num == 0 and B_num == 0:
-#                mu_T = empiri_BAF/(empiri_BAF + empiri_AAF)
-#            elif A_num == 0 and B_num != 0:
-#                mu_T = 1 - err
-#            elif A_num != 0 and B_num == 0:
-#                mu_T = err
-#            else:
-#                mu_T = empiri_BAF*B_num/(empiri_BAF*B_num + empiri_AAF*A_num)
-#                
-#            MU_T.append(mu_T)
-#    
-#    return MU_T
-
-#def get_P_CG(copynumber_max):
-#    sigma = constants.SIGMA
-#    
-#    C = get_copynumber_tumor_num(copynumber_max)
-#    G = get_genotypes_tumor_num(copynumber_max)
-#    c_T = np.array(get_copynumber_tumor(copynumber_max))
-#    g_T = get_genotypes_tumor(copynumber_max)
-#    
-#    P_CG = np.ones((C, G))*sigma
-#    
-#    for c in range(0, C):
-#        if c_T[c] == 0:
-#            P_CG[c, 0] = 1 - sigma*(G - 1)
-#            continue
-#    
-#        if c_T[c]%2 == 0:
-#            compatible_num = 1
-#            for g in range(0, G):
-#                A_num = g_T[g].count('A')
-#                B_num = g_T[g].count('B')
-#                if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL' and A_num == B_num:
-#                    P_CG[c, g] = (1 - sigma*(G - compatible_num))/compatible_num
-#            
-#            continue
-#        
-#        compatible_num = 0
-#        for g in range(0, G):
-#            if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
-#                compatible_num += 1
-#                        
-#        for g in range(0, G):
-#            if len(g_T[g]) == c_T[c] and g_T[g] != 'NULL':
-#                P_CG[c, g] = (1 - sigma*(G - compatible_num))/compatible_num
-#    
-#    return P_CG
-
-#def get_omega(copynumber_max):
-#    C = get_copynumber_tumor_num(copynumber_max)
-#    
-#    omega = [10 for i in range(0, C)]
-#    
-#    return omega
 
 def get_genotypes_tumor(allelenumber_max):
     genotypes_tumor = []
@@ -300,20 +184,6 @@ def get_omega(allelenumber_max):
         omega[c] += np.power(alpha, ed_genotype)*tau
             
     return omega
-
-#def get_omega(allelenumber_max):
-#    tau = constants.TAU
-#    
-#    c_gT = get_copynumber_tumor_compat(allelenumber_max)
-#    c_T = get_copynumber_tumor(allelenumber_max)
-#    
-#    omega = []
-#    
-#    for c in c_T:
-#        omega_c = c_gT.count(c)*tau
-#        omega.append(omega_c)
-#            
-#    return omega
 
 def get_x_E(x_N, x_T, phi):
     
