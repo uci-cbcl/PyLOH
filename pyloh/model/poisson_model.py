@@ -250,12 +250,12 @@ class PoissonModelParameters(ModelParameters):
             if LOH_status_j == 'NONE':
                 continue            
 
-            complete_ll += self._complete_ll_CNV_by_segment(phi, psi[j], j)
+            complete_ll += self._complete_ll_CNA_by_segment(phi, psi[j], j)
             complete_ll += self._complete_ll_LOH_by_segment(phi, xi[j], psi[j], j)
         
         return complete_ll
     
-    def _complete_ll_CNV_by_segment(self, phi, psi_j, j):
+    def _complete_ll_CNA_by_segment(self, phi, psi_j, j):
         C = self.config_parameters['copynumber_tumor_num']
         G = self.config_parameters['genotypes_tumor_num']
         c_N = np.array(constants.COPY_NUMBER_NORMAL)
@@ -269,9 +269,9 @@ class PoissonModelParameters(ModelParameters):
         c_E_s = get_c_E(c_N, c_S, phi)
         lambda_E_j = D_N_j*c_E_j*Lambda_S/c_E_s
         
-        complete_ll_CNV_j = (psi_j*(D_T_j*np.log(lambda_E_j) - lambda_E_j)).sum()
+        complete_ll_CNA_j = (psi_j*(D_T_j*np.log(lambda_E_j) - lambda_E_j)).sum()
         
-        return complete_ll_CNV_j
+        return complete_ll_CNA_j
     
     def _complete_ll_LOH_by_segment(self, phi, xi_j, psi_j, j):
         C = self.config_parameters['copynumber_tumor_num']
@@ -427,10 +427,10 @@ class PoissonModelLikelihood(ModelLikelihood):
             log_likelihoods = np.logaddexp.reduce(log_likelihoods, axis = 1)            
             ll_LOH_j[c] = log_likelihoods.sum()
             
-        #log-likelihood for CNV
-        ll_CNV_j = log_poisson_likelihood(D_T_j, lambda_E_j)
+        #log-likelihood for CNA
+        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j)
         
-        ll_j = np.log(rho_j) + ll_LOH_j + ll_CNV_j
+        ll_j = np.log(rho_j) + ll_LOH_j + ll_CNA_j
         
         ll_j = np.logaddexp.reduce(ll_j, axis = 1)[0]
         

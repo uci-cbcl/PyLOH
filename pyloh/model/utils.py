@@ -201,7 +201,7 @@ def get_phi(x_N, x_T, x_E):
     
     return (x_E - x_N)/(x_T - x_N)
     
-def get_phi_CNV(c_N, c_T, D_N, D_T, c_S, Lambda_S):
+def get_phi_CNA(c_N, c_T, D_N, D_T, c_S, Lambda_S):
     numerator = c_N*D_T/(Lambda_S*D_N) - c_N
     denominator = c_T - c_N - c_S*D_T/(Lambda_S*D_N) + c_N*D_T/(Lambda_S*D_N)
     
