@@ -1,5 +1,5 @@
-README for PyLOH 1.0
-======================
+README for PyLOH
+================
 
 
 INTRODUCTION
