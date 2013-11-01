@@ -5,8 +5,25 @@ README for PyLOH 1.0
 INTRODUCTION
 ============
 
-Disambiguating tumor heterogeneity through loss of heterozygosity in paired cancer sequencing data with 
-a Poisson mixture model an annealing expectation maximization algorithm.
+Next-generation sequencing has revolutionized the study of
+cancer genomes. However, the reads obtained from next-
+generation sequencing of tumor samples often consist of a
+mixture of normal and tumor cells, which themselves can
+be of multiple clonal types. A prominent problem in the
+analysis of cancer genome sequencing data is deconvolving
+the mixture to identify the reads associated with tumor
+cells or a particular subclone of tumor cells. Solving the
+problem is, however, challenging due to the so-called
+“identifiability problem”, where different combinations of
+tumor purity and ploidy often explain the sequencing data
+equally well. Here, we propose a new model to resolve the
+identifiability problem by integrating two types of sequencing
+information - somatic copy number alterations and loss of
+heterozygosity - within an unified probabilistic framework.
+We derive algorithms to solve our model, and implement
+them in a software package called PyLOH. We also introduce a 
+novel visualization method "BAF heat map" to to characterize 
+the cluster pattern of LOH.
 
 
 INSTALL
@@ -112,7 +129,7 @@ $ PyLOH.py run_model BASENAME --allele_number_max 2 --max_iters 100 --stop_value
 ```
 **BASENAME** The base name of preprocessed files created in the preprocess step.
 
-**--allele_number_max** The maximum copy number of each allele allows to take.
+**--allelenumber_max** The maximum copy number of each allele allows to take.
 
 **--priors** Path to the file of the prior distribution. The prior file must be consistent with the --allele_number_max. If not provided,
 use uniform prior, which is recommended.
@@ -171,7 +188,8 @@ column in a *.PyLOH.segments file is listed here:
 
 **\*.PyLOH.heatmap.pkl** The preprocessed BAF heat map file in Python pickle format.
 
-**\*.PyLOH.heatmap.plot** The folder of BAF heat maps plotted for each segment.
+**\*.PyLOH.heatmap.plot** The folder of BAF heat maps plotted for each segment. A typical BAF heat map looks like this
+![alt tag](https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/BAF_heamap_sample.png?raw=true)
 
 
 
