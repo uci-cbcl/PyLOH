@@ -23,11 +23,11 @@ import numpy as np
 
 from pyloh import constants
 from pyloh.preprocess.data import Data
-from pyloh.model.utils import get_genotypes_tumor, get_genotypes_tumor_num
+from pyloh.model.utils import get_copynumber_tumor, get_copynumber_tumor_num
 
 class ProbabilisticModel(object):
-    def __init__(self, allele_number_max):
-        self.allele_number_max = allele_number_max
+    def __init__(self, allelenumber_max):
+        self.allelenumber_max = allelenumber_max
         self.priors_parser = PriorParser()
         self.data = Data()
         self._init_components()
@@ -82,14 +82,15 @@ class ModelTrainer(object):
         converged = False
         
         parameters = self.model_parameters.parameters
-        old_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
+        priors = self.priors
+        old_log_likelihood = self.model_likelihood.get_log_likelihood(parameters, priors)
   
         while converged == False:
             self._E_step()
             self._M_step()
 
             parameters = self.model_parameters.parameters
-            new_log_likelihood = self.model_likelihood.get_log_likelihood(parameters)
+            new_log_likelihood = self.model_likelihood.get_log_likelihood(parameters, priors)
             
             if self.iters > 0:
                 ll_change = (new_log_likelihood - old_log_likelihood) / np.abs(old_log_likelihood)
@@ -159,7 +160,7 @@ class ModelLikelihood(object):
         self.restart_parameters = restart_parameters
         self.config_parameters = config_parameters
         
-    def get_log_likelihood(self, parameters):
+    def get_log_likelihood(self, parameters, priors):
         raise NotImplemented
     
 #JointSNVMix        
@@ -167,15 +168,15 @@ class PriorParser(object):
     def __init__(self):                
         self.priors = {}
         
-    def read_priors(self, priors_filename, allele_number_max):                
+    def read_priors(self, priors_filename, allelenumber_max):                
         self.parser = ConfigParser()
         self.parser.read(priors_filename)
         
-        genotypes_tumor = get_genotypes_tumor(allele_number_max)
-        genotypes_tumor_num = get_genotypes_tumor_num(allele_number_max)
+        copynumber_tumor = get_copynumber_tumor(allelenumber_max)
+        copynumber_tumor_num = get_copynumber_tumor_num(allelenumber_max)
         
-        self.priors['omega'] = np.zeros(genotypes_tumor_num)
+        self.priors['omega'] = np.zeros(copynumber_tumor_num)
         
-        for i, genotype in enumerate(genotypes_tumor):
-            self.priors['omega'][i] = self.parser.getfloat('omega', genotype)
+        for i, copynumber in enumerate(copynumber_tumor):
+            self.priors['omega'][i] = self.parser.getfloat('omega', str(copynumber))
     
