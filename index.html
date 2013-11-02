@@ -20,19 +20,41 @@
         <p class="header">1.0</p>
 
         <ul>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.0.zip">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.0.tar.gz">Download TAR</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/tarball/master">Download TAR</a></li>
           <li><a class="buttons github" href="https://github.com/uci-cbcl/PyLOH">View On GitHub</a></li>
         </ul>
 
-        <p class="header">For earlier versions of PyLOH, please view <a class="header name" href="https://github.com/uci-cbcl/PyLOH/releases">release</a></p>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/uci-cbcl">uci-cbcl</a></p>
+
 
       </header>
       <section>
         <h1>
+<a name="readme-for-pyloh" class="anchor" href="#readme-for-pyloh"><span class="octicon octicon-link"></span></a>README for PyLOH</h1>
+
+<h1>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>INTRODUCTION</h1>
 
-<p>Disambiguating tumor heterogeneity through loss of heterozygosity in paired cancer sequencing data with a Poisson mixture model an annealing expectation maximization algorithm.</p>
+<p>Next-generation sequencing has revolutionized the study of
+cancer genomes. However, the reads obtained from next-
+generation sequencing of tumor samples often consist of a
+mixture of normal and tumor cells, which themselves can
+be of multiple clonal types. A prominent problem in the
+analysis of cancer genome sequencing data is deconvolving
+the mixture to identify the reads associated with tumor
+cells or a particular subclone of tumor cells. Solving the
+problem is, however, challenging due to the so-called
+“identifiability problem”, where different combinations of
+tumor purity and ploidy often explain the sequencing data
+equally well. Here, we propose a new model to resolve the
+identifiability problem by integrating two types of sequencing
+information - somatic copy number alterations and loss of
+heterozygosity - within an unified probabilistic framework.
+We derive algorithms to solve our model, and implement
+them in a software package called PyLOH. We also introduce a 
+novel visualization method "BAF heat map" to to characterize 
+the cluster pattern of LOH.</p>
 
 <h1>
 <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>INSTALL</h1>
@@ -130,7 +152,7 @@ But using automatic segmentation algorithm to generate SEGMENTS.bed is highly re
 
 <p><strong>BASENAME</strong> The base name of preprocessed files created in the preprocess step.</p>
 
-<p><strong>--allele_number_max</strong> The maximum copy number of each allele allows to take.</p>
+<p><strong>--allelenumber_max</strong> The maximum copy number of each allele allows to take.</p>
 
 <p><strong>--priors</strong> Path to the file of the prior distribution. The prior file must be consistent with the --allele_number_max. If not provided,
 use uniform prior, which is recommended.</p>
@@ -249,7 +271,8 @@ column in a *.PyLOH.segments file is listed here:</p>
 
 <p><strong>*.PyLOH.heatmap.pkl</strong> The preprocessed BAF heat map file in Python pickle format.</p>
 
-<p><strong>*.PyLOH.heatmap.plot</strong> The folder of BAF heat maps plotted for each segment.</p>
+<p><strong>*.PyLOH.heatmap.plot</strong> The folder of BAF heat maps plotted for each segment. A typical BAF heat map looks like this
+<img src="https://github.com/uci-cbcl/PyLOH/blob/gh-pages/images/BAF_heamap_sample.png?raw=true" alt="alt tag"></p>
 
 <h1>
 <a name="other" class="anchor" href="#other"><span class="octicon octicon-link"></span></a>OTHER</h1>
@@ -273,7 +296,7 @@ can copy the commands in <code>bin/BICseq.R</code> and paste them in a R interat
 <p><strong>--seg_length</strong> Only convert segments with length longer than the threshold.</p>
       </section>
       <footer>
-        <p><small>This project is maintained by <a href="https://github.com/yil8">Yi Li</a></small></p>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
