@@ -60,6 +60,10 @@ class PoissonModelTrainer(ModelTrainer):
         print "#" * 100
         print "# Running Info."
         print "#" * 100
+        
+        #subclonal branch
+        print "Segment : ", self.data.segments[0][0]
+        
         print "Round of restarts : ", self.idx_restart + 1
         print "Baseline copy number : ", c_S
         print "Maximum copy number of each allele : ", allelenumber_max
