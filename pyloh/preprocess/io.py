@@ -51,6 +51,9 @@ class PairedCountsIterator:
                 normal_column, tumor_column = self.paired_pileup_iter.next()
                 continue
             else:
+                paired_counts.append(int(self.chrom.strip('chr')))
+                paired_counts.append(pos)
+                
                 return paired_counts
 
     def _get_paired_counts(self, normal_column, tumor_column, pos, ref_base):

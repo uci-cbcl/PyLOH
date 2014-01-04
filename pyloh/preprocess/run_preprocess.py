@@ -143,7 +143,7 @@ def process_by_segment(args_tuple):
 def iterator_to_counts(paired_counts_iter):
     buffer = 100000
     
-    paired_counts_j = np.array([[], [], [], []], dtype=int).transpose()
+    paired_counts_j = np.array([[], [], [], [], [], []], dtype=int).transpose()
     BAF_counts_j = np.zeros((100, 100))
     buffer_counts = []
     i = 0

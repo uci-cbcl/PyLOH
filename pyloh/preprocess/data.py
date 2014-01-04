@@ -53,9 +53,9 @@ class Data:
             if line[0] == '#':
                 continue
             
-            idx, a_N, b_N, a_T, b_T = map(int, line.strip('\n').split('\t'))
+            idx, a_N, b_N, a_T, b_T, chrom, pos = map(int, line.strip('\n').split('\t'))
             
-            self.paired_counts[idx].append([a_N, b_N, a_T, b_T])
+            self.paired_counts[idx].append([a_N, b_N, a_T, b_T, chrom, pos])
             
         for j in range(0, self.seg_num):
             self.paired_counts[j] = np.array(self.paired_counts[j])
@@ -72,7 +72,7 @@ class Data:
     def _write_counts(self, outcounts_file_name):
         outfile = open(outcounts_file_name, 'w')
         
-        outfile.write('\t'.join(['#seg_idx', 'normal_A', 'normal_B', 'tumor_A', 'tumor_B']) + '\n')
+        outfile.write('\t'.join(['#seg_idx', 'normal_A', 'normal_B', 'tumor_A', 'tumor_B', 'chromosome', 'position']) + '\n')
         
         for j in range(0, self.seg_num):
             for i in range(0, self.paired_counts[j].shape[0]):
