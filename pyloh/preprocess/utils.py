@@ -3,6 +3,7 @@ Created on 2013-07-27
 
 @author: Yi Li
 '''
+import sys
 import numpy as np
 
 from pyloh import constants
@@ -15,12 +16,16 @@ def BEDParser(bed_file_name):
     ends = []
     
     for line in inbed:
-        if line[0:3] != 'chr':
+        fields = line.split('\t')
+        chrom_name = fields[0]
+        chrom_ID = chrom_name_to_ID(chrom_name)
+        
+        if chrom_ID == -1:
             continue
         
-        chrom, start, end = line.split('\t')[0:3]
+        chrom_name, start, end = fields[0:3]
         
-        chroms.append(chrom)
+        chroms.append(chrom_name)
         starts.append(int(start))
         ends.append(int(end))
             
@@ -28,6 +33,38 @@ def BEDParser(bed_file_name):
     
     return (chroms, starts, ends)
     
+def chrom_ID_to_name(ID, format):
+    if format == 'UCSC':
+        chrom_name = 'chr' + str(ID)
+    elif format == 'ENSEMBL':
+        chrom_name = str(ID)
+    else:
+        print 'Error: %s not supported' % (format)
+        sys.exit(1)
+
+    return chrom_name
+
+def chrom_name_to_ID(chrom_name):
+    ID = -1
+    
+    try:
+        ID = int(chrom_name.strip('chr'))
+    except:
+        pass
+        
+    return ID
+
+def get_chrom_format(chrom):
+    if chrom[0:3] == 'chr':
+        return 'UCSC'
+    else:
+        try:
+            ID = int(chrom)
+            return 'ENSEMBL'
+        except:
+            print 'Error: %s not supported' % (chrom)
+            sys.exit(-1)
+
 def normal_heterozygous_filter(counts):
     BAF_N_MAX = constants.BAF_N_MAX
     BAF_N_MIN = constants.BAF_N_MIN

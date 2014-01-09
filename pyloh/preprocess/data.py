@@ -98,20 +98,22 @@ class Segments:
         self.log2_ratio = []
         
     def segmentation_by_chrom(self, normal_bam, tumor_bam):
-        chrom_list = constants.CHROM_LIST
+        chrom_ID_list = constants.CHROM_ID_LIST
         chrom_start = constants.CHROM_START
-        chrom_num = len(chrom_list)
+        chrom_num = len(chrom_ID_list)
         
-        header_SQ = normal_bam.header['SQ']
-        chrom_lens = self._get_chrom_lens(chrom_list, header_SQ)
+        sam_SQ = normal_bam.header['SQ']
+        sam_chrom_format = get_chrom_format(sam_SQ[0]['SN'])
+        chrom_lens = self._get_chrom_lens(chrom_ID_list, sam_SQ)
         
         for i in range(0, chrom_num):
-            seg_name = self._get_segment_name(chrom_list[i], chrom_start, chrom_lens[i])
-            normal_reads_num = normal_bam.count(chrom_list[i], chrom_start, chrom_lens[i])
-            tumor_reads_num = tumor_bam.count(chrom_list[i], chrom_start, chrom_lens[i])
+            chrom_name = chrom_ID_to_name(chrom_ID_list[i], sam_chrom_format)
+            seg_name = self._get_segment_name(chrom_name, chrom_start, chrom_lens[i])
+            normal_reads_num = normal_bam.count(chrom_name, chrom_start, chrom_lens[i])
+            tumor_reads_num = tumor_bam.count(chrom_name, chrom_start, chrom_lens[i])
             
             self.names.append(seg_name)
-            self.chroms.append(chrom_list[i])
+            self.chroms.append(chrom_name)
             self.starts.append(chrom_start)
             self.ends.append(chrom_lens[i])
             self.normal_reads_num.append(normal_reads_num)
@@ -122,35 +124,39 @@ class Segments:
         self._init_LOH_status()
         
     def segmentation_by_bed(self, normal_bam, tumor_bam, bed_file_name):
-        chrom_list = constants.CHROM_LIST
+        chrom_ID_list = constants.CHROM_ID_LIST
         chrom_start = constants.CHROM_START
         
-        header_SQ = normal_bam.header['SQ']
-        chrom_lens = self._get_chrom_lens(chrom_list, header_SQ)
+        sam_SQ = normal_bam.header['SQ']
+        sam_chrom_format = get_chrom_format(sam_SQ[0]['SN'])
+        chrom_lens = self._get_chrom_lens(chrom_ID_list, sam_SQ)
         
         bed_chroms, bed_starts, bed_ends = BEDParser(bed_file_name)
+        bed_chrom_format = get_chrom_format(bed_chroms[0])
         bed_num = len(bed_chroms)
         
         for i in range(0, bed_num):
-            seg_name = self._get_segment_name(bed_chroms[i], bed_starts[i], bed_ends[i])
+            chrom_ID = chrom_name_to_ID(bed_chroms[i])
+            chrom_name = chrom_ID_to_name(chrom_ID, sam_chrom_format)
+            seg_name = self._get_segment_name(chrom_name, bed_starts[i], bed_ends[i])
             
-            if bed_chroms[i] not in chrom_list:
+            if chrom_ID not in chrom_ID_list:
                 print 'Chromsome {0} not found, segment {1} excluded...'.format(bed_chroms[i], seg_name)
                 sys.stdout.flush()
                 continue
             
-            chrom_idx = chrom_list.index(bed_chroms[i])
+            chrom_idx = chrom_ID_list.index(chrom_ID)
             
             if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[chrom_idx]:
                 print 'Out of range chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
                 sys.stdout.flush()
                 continue
 
-            normal_reads_num = normal_bam.count(bed_chroms[i], bed_starts[i], bed_ends[i])
-            tumor_reads_num = tumor_bam.count(bed_chroms[i], bed_starts[i], bed_ends[i])
+            normal_reads_num = normal_bam.count(chrom_name, bed_starts[i], bed_ends[i])
+            tumor_reads_num = tumor_bam.count(chrom_name, bed_starts[i], bed_ends[i])
             
             self.names.append(seg_name)
-            self.chroms.append(bed_chroms[i])
+            self.chroms.append(chrom_name)
             self.starts.append(bed_starts[i])
             self.ends.append(bed_ends[i])
             self.normal_reads_num.append(normal_reads_num)
@@ -160,15 +166,15 @@ class Segments:
             
         self._init_LOH_status()
     
-    def _get_chrom_lens(self, chrom_list, header_SQ):
+    def _get_chrom_lens(self, chrom_ID_list, sam_SQ):
         chrom_lens = []
         
-        for i in range(0, len(chrom_list)):
-            chrom = chrom_list[i]
+        for i in range(0, len(chrom_ID_list)):
+            chrom_ID = chrom_ID_list[i]
             
-            for j in range(0, len(header_SQ)):
-                if chrom == header_SQ[j]['SN']:
-                    chrom_lens.append(int(header_SQ[j]['LN']))
+            for j in range(0, len(sam_SQ)):
+                if chrom_ID == chrom_name_to_ID(sam_SQ[j]['SN']):
+                    chrom_lens.append(int(sam_SQ[j]['LN']))
                     break
         
         return chrom_lens
