@@ -103,7 +103,7 @@ class Segments:
         chrom_num = len(chrom_ID_list)
         
         sam_SQ = normal_bam.header['SQ']
-        sam_chrom_format = get_chrom_format(sam_SQ[0]['SN'])
+        sam_chrom_format = get_chrom_format(map(lambda x:x['SN'], sam_SQ))
         chrom_lens = self._get_chrom_lens(chrom_ID_list, sam_SQ)
         
         for i in range(0, chrom_num):
@@ -128,11 +128,11 @@ class Segments:
         chrom_start = constants.CHROM_START
         
         sam_SQ = normal_bam.header['SQ']
-        sam_chrom_format = get_chrom_format(sam_SQ[0]['SN'])
+        sam_chrom_format = get_chrom_format(map(lambda x:x['SN'], sam_SQ))
         chrom_lens = self._get_chrom_lens(chrom_ID_list, sam_SQ)
         
         bed_chroms, bed_starts, bed_ends = BEDParser(bed_file_name)
-        bed_chrom_format = get_chrom_format(bed_chroms[0])
+        bed_chrom_format = get_chrom_format(bed_chroms)
         bed_num = len(bed_chroms)
         
         for i in range(0, bed_num):

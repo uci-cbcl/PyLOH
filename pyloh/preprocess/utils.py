@@ -54,16 +54,26 @@ def chrom_name_to_ID(chrom_name):
         
     return ID
 
-def get_chrom_format(chrom):
-    if chrom[0:3] == 'chr':
-        return 'UCSC'
+def get_chrom_format(chroms):
+    format = 'NONE'
+    
+    for chrom in chroms:
+        if chrom[0:3] == 'chr':
+            format = 'UCSC'
+            break
+        else:
+            try:
+                ID = int(chrom)
+                format = 'ENSEMBL'
+                break
+            except:
+                pass
+    
+    if format == 'NONE':
+        print 'Error: %s not supported' % (chrom)
+        sys.exit(-1)
     else:
-        try:
-            ID = int(chrom)
-            return 'ENSEMBL'
-        except:
-            print 'Error: %s not supported' % (chrom)
-            sys.exit(-1)
+        return format
 
 def normal_heterozygous_filter(counts):
     BAF_N_MAX = constants.BAF_N_MAX
