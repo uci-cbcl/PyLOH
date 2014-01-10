@@ -45,6 +45,11 @@ class PairedCountsIterator:
             pos = normal_column.pos
             ref_base = self.ref_genome_fasta.fetch(self.chrom, pos, pos + 1).upper()
             
+            if ref_base == '':
+                print 'Error: %s does not match the reference of the bam files' \
+                % self.ref_genome_fasta.filename
+                sys.exit(-1)
+            
             paired_counts = self._get_paired_counts(normal_column, tumor_column, pos, ref_base)
             
             if paired_counts == None:
