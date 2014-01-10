@@ -1,5 +1,5 @@
-README for PyLOH 1.1
-====================
+README for PyLOH 1.1.1
+======================
 
 
 INTRODUCTION
@@ -95,8 +95,9 @@ cancer sequencing data, execute:
 $ PyLOH.py preprocess REFERENCE_GENOME.fasta NORMAL.bam TUMOUR.bam BASENAME --segments_bed SEGMENTS.bed --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
 ```
 
-**REFERENCE_GENOME.fasta** The path to the fasta file that the paired BAM files aligned to. Note that the index file should be generated 
-for the reference genome. This can be done by running samtools as follows:
+**REFERENCE_GENOME.fasta** The path to the fasta file that the paired BAM files aligned to. Currently, only the
+[UCSC](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) and [ENSEMBL](http://uswest.ensembl.org/info/website/upload/bed.html)
+chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:
 
 `$ samtools faidx REFERENCE_GENOME.fasta`
 
