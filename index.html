@@ -20,18 +20,16 @@
         <p class="header">1.1.1</p>
 
         <ul>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/tarball/master">Download TAR</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.1.1.zip">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.1.1.tar.gz">Download TAR</a></li>
           <li><a class="buttons github" href="https://github.com/uci-cbcl/PyLOH">View On GitHub</a></li>
         </ul>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/uci-cbcl">uci-cbcl</a></p>
+        <p class="header">For earlier versions of PyLOH, please view <a class="header name" href="https://github.com/uci-cbcl/PyLOH/releases">release</a></p>
 
 
       </header>
       <section>
-        <h1>
-<a name="readme-for-pyloh-111" class="anchor" href="#readme-for-pyloh-111"><span class="octicon octicon-link"></span></a>README for PyLOH 1.1.1</h1>
 
 <h1>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>INTRODUCTION</h1>
@@ -118,8 +116,9 @@ cancer sequencing data, execute:</p>
 </code></pre>
 
 <p><strong>REFERENCE_GENOME.fasta</strong> The path to the fasta file that the paired BAM files aligned to. Currently, only the
-<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC</a> and <a href="http://uswest.ensembl.org/info/website/upload/bed.html">ENSEMBL</a>
-chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:</p>
+<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC</a> and <a href="http://uswest.ensembl.org/info/website/upload/bed.html">ENSEMBLE</a>
+chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:
+ Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:</p>
 
 <p><code>$ samtools faidx REFERENCE_GENOME.fasta</code></p>
 
@@ -297,20 +296,10 @@ can copy the commands in <code>bin/BICseq.R</code> and paste them in a R interat
 <p><strong>--seg_length</strong> Only convert segments with length longer than the threshold.</p>
       </section>
       <footer>
-        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+        <p><small>This project is maintained by <a href="https://github.com/yil8">Yi Li</a></small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		          <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("PyLOH");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
+		
   </body>
 </html>
