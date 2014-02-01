@@ -53,7 +53,7 @@ class Data:
             if line[0] == '#':
                 continue
             
-            idx, a_N, b_N, a_T, b_T = map(int, line.strip('\n').split('\t'))
+            idx, a_N, b_N, a_T, b_T = map(int, line.strip('\n').split('\t')[0:5])
             
             self.paired_counts[idx].append([a_N, b_N, a_T, b_T])
             
