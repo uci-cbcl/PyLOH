@@ -10,7 +10,7 @@ from pyloh.preprocess.data import Data, Segments
 
 MU_0 = 0.5
 P_VALUE = 0.05
-
+SITES_NUM_MIN = 50
 
 
 def ab2ld(counts):
@@ -42,6 +42,9 @@ def main():
     log2_ratio_lst = []
     LOH_frec_lst = []
     for j in range(0, seg_num):
+        if paired_counts[j].shape[0] < 50:
+            continue
+        
         log2_ratio = segments[j][8]
         LOH_frec = getLOHfrec(paired_counts[j])
         
@@ -53,6 +56,8 @@ def main():
     plt.ylim(0, 1)
     plt.xlabel('copy number log2 ratio')
     plt.ylabel('LOH sites fraction')
+    plt.yticks(sp.linspace(0, 1, 11), ['0%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'])
+    plt.grid(True)
     plt.show()
 
 
