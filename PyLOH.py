@@ -44,7 +44,7 @@ parser_preprocess.add_argument('--segments_bed', default=None, type=str,
                           help='''BED file for segments. If not provided,
                           use autosomes as segments. Default is None.''')
 
-parser_preprocess.add_argument('--WES', default=False, action='store_true', type=bool,
+parser_preprocess.add_argument('--WES', default=False, action='store_true',
                           help='''Flag indicating whether the BAM files are whole exome sequencing(WES) or not.
                           If not provided, the BAM files are assumed to be whole genome sequencing(WGS).
                           Default is False.''')
