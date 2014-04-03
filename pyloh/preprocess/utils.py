@@ -110,7 +110,7 @@ def get_BAF_counts(counts):
     
     return BAF_counts
 
-def tumor_LOH_test(counts):
+def tumor_LOH_test(counts, WES_flag):
     BAF_T_MAX = constants.BAF_T_MAX
     BAF_T_MIN = constants.BAF_T_MIN
     LOH_FREC_MAX = constants.LOH_FREC_MAX
@@ -118,7 +118,12 @@ def tumor_LOH_test(counts):
     
     I = counts.shape[0]
     
-    if I < constants.SITES_NUM_MIN:
+    if WES_flag == True:
+        sites_num_min = constants.SITES_NUM_MIN_WES
+    else:
+        sites_num_min = constants.SITES_NUM_MIN_WGS
+    
+    if I < sites_num_min:
         LOH_frec = -1
         LOH_status = 'NONE'
         

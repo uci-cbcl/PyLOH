@@ -80,8 +80,8 @@ class Data:
         
         outfile.close()
         
-    def tumor_LOH_test(self):
-        self.segments.tumor_LOH_test(self.paired_counts)
+    def tumor_LOH_test(self, WES_flag):
+        self.segments.tumor_LOH_test(self.paired_counts, WES_flag)
 
 class Segments:
     def __init__(self):
@@ -179,9 +179,9 @@ class Segments:
         
         return chrom_lens
         
-    def tumor_LOH_test(self, paired_counts):
+    def tumor_LOH_test(self, paired_counts, WES_flag):
         for j in range(0, self.num):
-            LOH_frec, LOH_status = tumor_LOH_test(paired_counts[j])
+            LOH_frec, LOH_status = tumor_LOH_test(paired_counts[j], WES_flag)
             self.LOH_frec[j] = LOH_frec
             self.LOH_status[j] = LOH_status
             
