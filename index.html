@@ -17,19 +17,21 @@
     <div class="wrapper">
       <header>
         <h1 class="header">PyLOH</h1>
-        <p class="header">1.1.3</p>
+        <p class="header">1.1.1</p>
 
         <ul>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.1.3.zip">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/archive/1.1.3.tar.gz">Download TAR</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/PyLOH/tarball/master">Download TAR</a></li>
           <li><a class="buttons github" href="https://github.com/uci-cbcl/PyLOH">View On GitHub</a></li>
         </ul>
 
-        <p class="header">For earlier versions of PyLOH, please view <a class="header name" href="https://github.com/uci-cbcl/PyLOH/releases">release</a></p>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/uci-cbcl">uci-cbcl</a></p>
 
 
       </header>
       <section>
+        <h1>
+<a name="readme-for-pyloh-120" class="anchor" href="#readme-for-pyloh-120"><span class="octicon octicon-link"></span></a>README for PyLOH 1.2.0</h1>
 
 <h1>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>INTRODUCTION</h1>
@@ -52,7 +54,8 @@ heterozygosity - within an unified probabilistic framework.
 We derive algorithms to solve our model, and implement
 them in a software package called PyLOH. We also introduce a 
 novel visualization method "BAF heat map" to to characterize 
-the cluster pattern of LOH.</p>
+the cluster pattern of LOH. If you have any questions, please
+email <a href="mailto:yil8@uci.edu">yil8@uci.edu</a></p>
 
 <h1>
 <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>INSTALL</h1>
@@ -116,9 +119,8 @@ cancer sequencing data, execute:</p>
 </code></pre>
 
 <p><strong>REFERENCE_GENOME.fasta</strong> The path to the fasta file that the paired BAM files aligned to. Currently, only the
-<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC</a> and <a href="http://uswest.ensembl.org/info/website/upload/bed.html">ENSEMBLE</a>
-chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:
- Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:</p>
+<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC</a> and <a href="http://uswest.ensembl.org/info/website/upload/bed.html">ENSEMBL</a>
+chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:</p>
 
 <p><code>$ samtools faidx REFERENCE_GENOME.fasta</code></p>
 
@@ -133,6 +135,9 @@ be done by running</p>
 
 <p><strong>--segments_bed</strong> Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
 But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a>.</p>
+
+<p><strong>--WES</strong> Flag indicating whether the BAM files are whole exome sequencing(WES) or not. If not provided, the BAM files
+are assumed to be whole genome sequencing(WGS).</p>
 
 <p><strong>--min_depth</strong> Minimum depth in both normal and tumor sample required to use a site in the analysis.</p>
 
@@ -257,16 +262,10 @@ column in a *.PyLOH.segments file is listed here:</p>
 <th align="left">Column</th>
 <th align="left">Definition</th>
 </tr></thead>
-<tbody>
-<tr>
-<td align="left">allele_type</td>
-<td align="left">Estimated allele type of the segment</td>
-</tr>
-<tr>
+<tbody><tr>
 <td align="left">copy_number</td>
 <td align="left">Estimated copy number of the segment</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table><p><strong>*.PyLOH.purity</strong> Estimated tumor purity.</p>
 
 <p><strong>*.PyLOH.heatmap.pkl</strong> The preprocessed BAF heat map file in Python pickle format.</p>
@@ -294,12 +293,27 @@ can copy the commands in <code>bin/BICseq.R</code> and paste them in a R interat
 </code></pre>
 
 <p><strong>--seg_length</strong> Only convert segments with length longer than the threshold.</p>
+
+<h1>
+<a name="reference" class="anchor" href="#reference"><span class="octicon octicon-link"></span></a>Reference</h1>
+
+<p>Li, Y., Xie, X. (2014). Deconvolving tumor purity and ploidy by integrating copy number alterations and loss of heterozygosity. Bioinformatics.</p>
       </section>
       <footer>
-        <p><small>This project is maintained by <a href="https://github.com/yil8">Yi Li</a></small></p>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+		          <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("PyLOH");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
