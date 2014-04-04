@@ -1,4 +1,4 @@
-README for PyLOH 1.1.3
+README for PyLOH 1.2.0
 ======================
 
 
@@ -23,7 +23,8 @@ heterozygosity - within an unified probabilistic framework.
 We derive algorithms to solve our model, and implement
 them in a software package called PyLOH. We also introduce a 
 novel visualization method "BAF heat map" to to characterize 
-the cluster pattern of LOH.
+the cluster pattern of LOH. If you have any questions, please
+email yil8@uci.edu
 
 
 INSTALL
@@ -113,6 +114,9 @@ be done by running
 **--segments_bed** Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
 But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
 
+**--WES** Flag indicating whether the BAM files are whole exome sequencing(WES) or not. If not provided, the BAM files
+are assumed to be whole genome sequencing(WGS).
+
 **--min_depth** Minimum depth in both normal and tumor sample required to use a site in the analysis.
 
 **--min_base_qual** Minimum base quality required for each base.
@@ -182,7 +186,6 @@ column in a *.PyLOH.segments file is listed here:
 
 | Column           | Definition                            | 
 | :--------------- | :-------------------------------------| 
-| allele_type      | Estimated allele type of the segment  |      
 | copy_number      | Estimated copy number of the segment  |  
 
 **\*.PyLOH.purity** Estimated tumor purity.
@@ -212,3 +215,8 @@ $ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
 ```
 
 **--seg_length** Only convert segments with length longer than the threshold.
+
+
+Reference
+=========
+Li, Y., Xie, X. (2014). Deconvolving tumor purity and ploidy by integrating copy number alterations and loss of heterozygosity. Bioinformatics.
