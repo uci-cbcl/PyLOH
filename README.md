@@ -181,7 +181,7 @@ column in a *.PyLOH.segments file is listed here:
 | LOH_status       | FALSE -> no LOH; TRUE -> significant LOH; UNCERTAIN -> medium level LOH |
 | log2_ratio       | Log2 ratio between tumor_reads_num and normal_reads_num                 |
 
-**\*.PyLOH.segments.extended** The extended segments file after run_model. There are one additional columns:
+**\*.PyLOH.segments.extended** The extended segments file after run_model. There are one additional column:
 
 | Column           | Definition                            | 
 | :--------------- | :-------------------------------------| 
