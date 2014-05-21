@@ -79,8 +79,7 @@ PyLOH is composed of three modules:
 * `preprocess`. Preprocess the reads aliments of paired normal-tumor samples in BAM format and produce the paired counts file, 
 preprocessed segments file and preprocessed BAF heat map file as output.
  
-* `run_model`. Take the paired counts file and preprocessed segments file as input, estimate tumor purity, the copy number and the
-allele type of each segment.
+* `run_model`. Take the paired counts file and preprocessed segments file as input, estimate tumor purity, the copy number of each segment.
 
 * `postprocess`. Take the preprocessed BAF heat map file as input and plot the BAF heat map for each segment as output.
 
@@ -177,12 +176,12 @@ column in a *.PyLOH.segments file is listed here:
 | start            | Start position of the segment                                           |
 | end              | End position of the segment                                             |
 | normal_reads_num | Count of reads mapped to the segment in the normal sample               |
-| tumor_reads_num  | Count of reads mapped to the segment in the normal sample               |
+| tumor_reads_num  | Count of reads mapped to the segment in the tumor sample               |
 | LOH_frec         | Fraction of LOH sites in the segment                                    |
 | LOH_status       | FALSE -> no LOH; TRUE -> significant LOH; UNCERTAIN -> medium level LOH |
 | log2_ratio       | Log2 ratio between tumor_reads_num and normal_reads_num                 |
 
-**\*.PyLOH.segments.extended** The extended segments file after run_model. There are two additional columns:
+**\*.PyLOH.segments.extended** The extended segments file after run_model. There are one additional columns:
 
 | Column           | Definition                            | 
 | :--------------- | :-------------------------------------| 
