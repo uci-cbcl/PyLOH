@@ -218,7 +218,7 @@ $ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
 
 Example data
 ------------
-We used [Homo_sapiens_assembly18.fasta](http://www.broadinstitute.org/ftp/pub/seq/references/Homo_sapiens_assembly18.fasta) from Broad Institute as the REFERENCE_GENOME.fasta in the original paper. One example of simulation data can be found [here](http://www.ics.uci.edu/~yil8/public_data/PyLOH/). The ground truth tumor purity of this data is 90%.
+We used [Homo_sapiens_assembly18.fasta](http://www.broadinstitute.org/ftp/pub/seq/references/Homo_sapiens_assembly18.fasta) from Broad Institute as the REFERENCE_GENOME.fasta in the original paper. One example of simulation data can be found [here](http://www.ics.uci.edu/~yil8/public_data/PyLOH/). Please use binary mode to download the BAM file(e.g. wget command), directly ftp download using browser may corrupt the BAM file. The ground truth tumor purity of this data is 90%.
 
 
 Reference
