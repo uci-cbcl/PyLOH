@@ -216,6 +216,11 @@ $ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
 **--seg_length** Only convert segments with length longer than the threshold.
 
 
+Example data
+------------
+We used [Homo_sapiens_assembly18.fasta](http://www.broadinstitute.org/ftp/pub/seq/references/Homo_sapiens_assembly18.fasta) from Broad Institute as the REFERENCE_GENOME.fasta in the original paper. One example of simulation data can be found [here](http://www.ics.uci.edu/~yil8/public_data/PyLOH/). The ground truth tumor purity of this data is 90%.
+
+
 Reference
 =========
 Li, Y., Xie, X. (2014). Deconvolving tumor purity and ploidy by integrating copy number alterations and loss of heterozygosity. Bioinformatics.
