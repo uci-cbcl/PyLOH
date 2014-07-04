@@ -8,12 +8,24 @@ import sys
 
 import numpy as np
 import scipy
-from matplotlib import pyplot
+
+PLT_AVAIL = True
+try:
+    from matplotlib import pyplot
+except:
+    PLT_AVAIL = False
 
 from pyloh import constants
 from pyloh.preprocess.data import Segments, BAFHeatMap
 
 def plot_BAF_heatmap(args):
+    if PLT_AVAIL == True:
+        pass
+    else:
+        print "matplotlib.pyplot not available, skip plotting..."
+        sys.stdout.flush()
+        sys.exit(-1)
+
     BAF_heatmap = BAFHeatMap()
     BAF_heatmap.read_heatmap(args.filename_base)
     BAF_heatmap.get_color_max()
