@@ -1,4 +1,4 @@
-README for PyLOH 1.2.0
+README for PyLOH 1.3.0
 ======================
 
 
@@ -32,8 +32,7 @@ INSTALL
 
 Prerequisites
 -------------
-* Although not mandatory, Linux system is recommended.
-
+**Mandatory** 
 * Python (2.7). [Python 2.7.3](http://www.python.org/download/releases/2.7.3/) is recommended.
 
 * [Numpy](http://www.numpy.org/)(>=1.6.1). You can download the source of Numpy from [here](http://sourceforge.net/projects/numpy/files/).
@@ -42,11 +41,10 @@ Prerequisites
 
 * [Pysam](https://code.google.com/p/pysam/)(>=0.7). To install Pysam, you also need to install [Cython](http://cython.org/) first. 
 
+**Optional** 
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required to plot BAF heat map.
 
-
-Altough not required by PyLOH, [samtools](http://samtools.sourceforge.net/) can be useful for creating bam, bam index and fasta index 
-files which are required by the pysam module of PyLOH. 
+Although not mandatory, Linux system is recommended. Also, [samtools](http://samtools.sourceforge.net/) is not required by PyLOH, but can be useful for creating bam, bam index and fasta index  files which are required by the pysam module of PyLOH. 
 
 Install from source
 -------------------
