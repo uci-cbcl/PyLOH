@@ -206,7 +206,7 @@ can copy the commands in `bin/BICseq.R` and paste them in a R interative shell. 
 $ R CMD BATCH bin/BICseq.R
 ```
 Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file
-`segments.BICseq`. Then you can use the other script `bin/seg2bed.py` to convert the segments file into BED format:
+`segments.BICseq`. Then you can use the script `bin/seg2bed.py` to convert the segments file into BED format:
 ```
 $ seg2bed.py segments.BICseq segments.bed --seg_length 1000000
 ```
@@ -227,12 +227,8 @@ $ bam2DNAcopy.py NORMAL.bam TUMOUR.bam EXONS.bed DNAcopy.bed --min_depth 100
 
 **--min_depth** Minimum reads detph required for each exon region in both normal and tumor samples. Default is 100.
 
-Then you can copy the commands in `bin/DNAcopy.R` and paste them in a R interative shell. Or you can also run the R script from the command line:
-```
-$ R CMD BATCH bin/DNAcopy.R
-```
-Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file
-`segments.DNAcopy`. Then you can use the other script `bin/seg2bed.py` to convert the segments file into BED format then same way as for BICseq.
+Then you can run `bin/DNAcopy.R` the same way as `bin/BICseq.R`. Again, `DNAcopy.bed` must be in the same directory
+where you run the command. The R script will output a segments file `segments.DNAcopy`. Finally you can also use the script `bin/seg2bed.py` to convert the segments file into BED format then same way as for BICseq.
 
 
 Example data
