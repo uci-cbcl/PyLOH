@@ -1,4 +1,4 @@
-README for PyLOH 1.3.0
+README for PyLOH 1.4.0
 ======================
 
 
@@ -62,8 +62,8 @@ $ python setup.py install --prefix /home/yili/
 ```
 
 There are also `config/` and `bin/` folders under PyLOH-*. The `config/` folder contains example priors and the `bin/` folder contains 
-useful utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) and the python script to 
-convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.
+useful utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html),  [DNAcopy](http://www.bioconductor.org/packages/release/bioc/html/DNAcopy.html) and the python script to 
+convert BICseq/DNAcopy results to BED file. You can copy these two folders somewhere easily accessible.
 
 
 
@@ -109,7 +109,7 @@ be done by running
 **BASENAME** The base name of preprocessed files to be created.
 
 **--segments_bed** Use the genome segmentation stored in SEGMENTS.bed. If not provided, use 22 autosomes as the segmentaion. 
-But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html).
+But using automatic segmentation algorithm to generate SEGMENTS.bed is highly recommended, such as [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) for whole genome sequencing data and [DNAcopy](http://www.bioconductor.org/packages/release/bioc/html/DNAcopy.html) for whole exome sequencing data.
 
 **--WES** Flag indicating whether the BAM files are whole exome sequencing(WES) or not. If not provided, the BAM files
 are assumed to be whole genome sequencing(WGS).
@@ -197,21 +197,40 @@ column in a *.PyLOH.segments file is listed here:
 OTHER
 =====
 
-BIC-seq related utilities
--------------------------
+Segmentation for WGS data based on BIC-seq
+------------------------------------------
 We highly recommend using automatic segmentation algorithm to partition the tumor genome, and thus prepare the segments file in BED format.
-For exmaple, we used [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) in the original paper. To run a BICseq analysis, you
+For exmaple, we used [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) in the original paper for whole genome sequencing (WGS) data. To run a BICseq analysis, you
 can copy the commands in `bin/BICseq.R` and paste them in a R interative shell. Or you can also run the R script from the command line:
 ```
 $ R CMD BATCH bin/BICseq.R
 ```
 Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file
-`segments.BICseq`. Then you can use the other script `bin/BICseq2bed.py` to convert the segments file into BED format:
+`segments.BICseq`. Then you can use the other script `bin/seg2bed.py` to convert the segments file into BED format:
 ```
-$ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
+$ seg2bed.py segments.BICseq segments.bed --seg_length 1000000
 ```
 
 **--seg_length** Only convert segments with length longer than the threshold.
+
+
+Segmentation for WES data based on DNAcopy
+------------------------------------------
+For whole exome sequencing (WES) data, since reads coverage on targeted exonic regions are no longer randomly
+distributed due to probe's variable effciency, [DNAcopy](http://www.bioconductor.org/packages/release/bioc/html/DNAcopy.html) is recommended for segmentation instead of BICseq. To run DNAcopy analysis, you can firstly use the script `bin/bam2DNAcopy.py` to convert the paired BAM files of the normal and tumor sample into the input file for DNAcopy:
+```
+$ BICseq2bed.py NORMAL.bam TUMOUR.bam EXONS.bed DNAcopy.bed --min_depth 100
+```
+**EXONS.bed** The input bed file for all exon regions. Examples from Illumina TruSeq are included under `data/`.
+
+**--min_depth** Minimum reads detph required for each exon region in both normal and tumor samples. Default is 100.
+
+Then you can copy the commands in `bin/DNAcopy.R` and paste them in a R interative shell. Or you can also run the R script from the command line:
+```
+$ R CMD BATCH bin/DNAcopy.R
+```
+Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file
+`segments.DNAcopy`. Then you can use the other script `bin/seg2bed.py` to convert the segments file into BED format then same way as for BICseq.
 
 
 Example data
