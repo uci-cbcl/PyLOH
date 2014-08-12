@@ -219,9 +219,11 @@ Segmentation for WES data based on DNAcopy
 For whole exome sequencing (WES) data, since reads coverage on targeted exonic regions are no longer randomly
 distributed due to probe's variable effciency, [DNAcopy](http://www.bioconductor.org/packages/release/bioc/html/DNAcopy.html) is recommended for segmentation instead of BICseq. To run DNAcopy analysis, you can firstly use the script `bin/bam2DNAcopy.py` to convert the paired BAM files of the normal and tumor sample into the input file for DNAcopy:
 ```
-$ BICseq2bed.py NORMAL.bam TUMOUR.bam EXONS.bed DNAcopy.bed --min_depth 100
+$ bam2DNAcopy.py NORMAL.bam TUMOUR.bam EXONS.bed DNAcopy.bed --min_depth 100
 ```
 **EXONS.bed** The input bed file for all exon regions. Examples from Illumina TruSeq are included under `data/`.
+
+**DNAcopy.bed** The output bed file for running DNAcopy.
 
 **--min_depth** Minimum reads detph required for each exon region in both normal and tumor samples. Default is 100.
 
