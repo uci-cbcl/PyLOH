@@ -39,7 +39,7 @@ Prerequisites
 
 * [Scipy](http://www.scipy.org/)(>=0.10). You can download the source of Scipy from [here](http://sourceforge.net/projects/scipy/files/).
 
-* [Pysam](https://code.google.com/p/pysam/)(>=0.7). To install Pysam, you also need to install [Cython](http://cython.org/) first. 
+* [Pysam](https://code.google.com/p/pysam/)(>=0.7). To install Pysam, you also need to install [Cython](http://cython.org/) first. Currently, please don't use Pysam >= 0.8. They changed some of the APIs that are backward incompatible...[pysam-developers/pysam#68](https://github.com/pysam-developers/pysam/issues/68). I'm working on fixing those backward incompatibles.
 
 **Optional** 
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required to plot BAF heat map.
