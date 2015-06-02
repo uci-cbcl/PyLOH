@@ -88,7 +88,12 @@ class PairedCountsIterator:
             if read.is_del:
                 continue
             
-            qpos = read.qpos
+            if hasattr(read, 'qpos') == True:
+                qpos = read.qpos
+            elif hasattr(read, 'query_position') == True:
+                qpos = read.query_position
+            else:
+                raise Exception("Error in pysam qpos/query_position.")
                  
             mqual = read.alignment.mapq
             
