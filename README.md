@@ -127,7 +127,7 @@ Run model
 ---------
 After the paired cancer sequencing data is preprocessed, we can run the probabilistic model of PyLOH by execute:
 ```
-$ PyLOH.py run_model BASENAME --allele_number_max 2 --max_iters 100 --stop_value 1e-7
+$ PyLOH.py run_model BASENAME --allelenumber_max 2 --max_iters 100 --stop_value 1e-7
 ```
 **BASENAME** The base name of preprocessed files created in the preprocess step.
 
