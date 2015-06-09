@@ -41,8 +41,6 @@ Prerequisites
 
 * [Pysam](https://code.google.com/p/pysam/)(>=0.7). Pysam_0.7X preferred, Pysam_0.8X tested and seems to be much slower. To install Pysam, you also need to install [Cython](http://cython.org/) first.  
 
-* Currently, please don't use Pysam >= 0.8. They changed some of the APIs that are backward incompatible...[pysam-developers/pysam#68](https://github.com/pysam-developers/pysam/issues/68). I'm working on fixing those backward incompatibles.
-
 **Optional** 
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required to plot BAF heat map.
 
