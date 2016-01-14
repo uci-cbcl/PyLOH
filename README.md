@@ -233,7 +233,7 @@ where you run the command. The R script will output a segments file `segments.DN
 
 Example data
 ------------
-We used [Homo_sapiens_assembly18.fasta](http://www.broadinstitute.org/ftp/pub/seq/references/Homo_sapiens_assembly18.fasta) from Broad Institute as the REFERENCE_GENOME.fasta in the original paper. One example of simulation data can be found [here](http://www.ics.uci.edu/~yil8/public_data/PyLOH/). Please use binary mode to download the BAM file(e.g. wget command), directly ftp download using browser may corrupt the BAM file. The ground truth tumor purity of this data is 90%.
+We used [Homo_sapiens_assembly18.fasta](http://www.broadinstitute.org/ftp/pub/seq/references/Homo_sapiens_assembly18.fasta) from Broad Institute as the REFERENCE_GENOME.fasta in the original paper. One example of simulation data can be found [here](https://cbcl.ics.uci.edu/public_data/PyLOH/). Please use binary mode to download the BAM file(e.g. wget command), directly ftp download using browser may corrupt the BAM file. The ground truth tumor purity of this data is 90%.
 
 
 Reference
