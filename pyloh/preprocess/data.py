@@ -154,6 +154,11 @@ class Segments:
 
             normal_reads_num = normal_bam.count(chrom_name, bed_starts[i], bed_ends[i])
             tumor_reads_num = tumor_bam.count(chrom_name, bed_starts[i], bed_ends[i])
+
+            if normal_reads_num < constants.READS_NUM_MIN_SEG or tumor_reads_num < constants.READS_NUM_MIN_SEG:
+                print 'Not enough reads, chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
+                sys.stdout.flush()
+                continue
             
             self.names.append(seg_name)
             self.chroms.append(chrom_name)
